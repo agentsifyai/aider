@@ -1,4 +1,43 @@
-.aider*
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*.so
+*.pyo
+
+# Environment variables
 .env
-.venv
-__pycache__
+.env.*
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Editor / IDE settings
+.vscode/
+.idea/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# Flask-specific (optional)
+instance/
+uploads/
+
+# Aider
+.aider*
+
+# Logs
+*.log
+
+# Pytest
+.pytest_cache/
+
+# Coverage reports
+htmlcov/
+coverage.xml
+.cache/
