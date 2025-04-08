@@ -15,14 +15,38 @@
                     Choose PDF File
                 </label>
             </div>
+            <div id="file-selected" class="file-selected" style="display: none;">
+                <p id="file-selected-message"></p>
+            </div>
             <button type="submit" class="submit-btn">Process PDF</button>
         </form>
     </div>
     
+    <div id="loading-container" class="loading-container" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>Processing PDF... This may take a moment.</p>
+    </div>
+    
     <div id="result-section" class="result-section" style="display: none;">
-        <h2>Summary</h2>
+        <h2>Defects Summary</h2>
+        <p id="filename-display"></p>
         <div class="summary-content">
-            <p id="summary-text"></p>
+            <div id="table-container">
+                <table id="defects-table">
+                    <thead>
+                        <tr>
+                            <th>Defect</th>
+                            <th>Location</th>
+                        </tr>
+                    </thead>
+                    <tbody id="defects-table-body">
+                        <!-- Table rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="no-defects-message" style="display: none;">
+                <p>No defects found in the document.</p>
+            </div>
         </div>
     </div>
     
