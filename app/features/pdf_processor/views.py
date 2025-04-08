@@ -8,8 +8,6 @@ pdf_processor_bp = Blueprint('pdf_processor', __name__,
                           template_folder='template',
                           static_folder='template')  # Serve static files from template directory
 
-service = PDFProcessorService()
-
 ALLOWED_EXTENSIONS = {'pdf'}
 
 def allowed_file(filename):
@@ -36,6 +34,9 @@ async def upload_pdf():
         
         file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
+        
+        # Create a fresh service instance for each request
+        service = PDFProcessorService()
         
         try:
             document = await service.process_pdf(file_path)

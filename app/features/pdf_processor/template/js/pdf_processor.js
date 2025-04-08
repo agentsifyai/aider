@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const fileSelectedMessage = document.getElementById('file-selected-message');
 
     // Show selected file message when a file is chosen
-    fileInput.addEventListener('change', function() {
+    fileInput.addEventListener('change', function () {
         const file = fileInput.files[0];
         if (file) {
             fileSelectedMessage.textContent = `The PDF "${file.name}" has been uploaded. Press "Process PDF" to continue.`;
@@ -66,37 +66,37 @@ document.addEventListener('DOMContentLoaded', function () {
     function showResult(summary, filename) {
         const filenameDisplay = document.getElementById('filename-display');
         filenameDisplay.textContent = `File: ${filename || 'Unknown'}`;
-        
+
         const tableBody = document.getElementById('defects-table-body');
         const noDefectsMessage = document.getElementById('no-defects-message');
         const tableContainer = document.getElementById('table-container');
-        
+
         // Clear any previous results
         tableBody.innerHTML = '';
-        
+
         try {
             // Try to parse the JSON if it's a string
             let defects = summary;
             if (typeof summary === 'string') {
                 defects = JSON.parse(summary);
             }
-            
+
             if (Array.isArray(defects) && defects.length > 0) {
                 // We have defects to display in the table
                 defects.forEach(defect => {
                     const row = document.createElement('tr');
-                    
+
                     const nameCell = document.createElement('td');
                     nameCell.textContent = defect.name || 'Unknown defect';
                     row.appendChild(nameCell);
-                    
+
                     const locationCell = document.createElement('td');
                     locationCell.textContent = defect.location || 'Unknown location';
                     row.appendChild(locationCell);
-                    
+
                     tableBody.appendChild(row);
                 });
-                
+
                 // Show the table, hide the no defects message
                 tableContainer.style.display = 'block';
                 noDefectsMessage.style.display = 'none';
@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
             showError(`Could not parse defects data: ${error.message}. Raw data: ${summary}`);
             return;
         }
-        
+
         resultSection.style.display = 'block';
         errorSection.style.display = 'none';
     }
