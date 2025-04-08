@@ -217,5 +217,5 @@ class PDFProcessorService:
         return PDFDocument(
             filename, 
             content, 
-            str(defects_lists).replace("'", '"') # format into json string
+            str(defects_lists).replace("\"", "\\\"").replace("'", '"') # format into json string
             )
