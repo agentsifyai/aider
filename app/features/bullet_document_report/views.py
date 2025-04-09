@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, render_template, request, jsonify, current_app
 from werkzeug.utils import secure_filename
-from app.features.pdf_processor.services import PDFProcessorService
+from app.features.bullet_document_report.services import BulletDocumentReportAnalysisService
 
 pdf_processor_bp = Blueprint('pdf_processor', __name__, 
                           url_prefix='/pdf-processor',
@@ -36,7 +36,7 @@ async def upload_pdf():
         file.save(file_path)
         
         # Create a fresh service instance for each request
-        service = PDFProcessorService()
+        service = BulletDocumentReportAnalysisService()
         
         try:
             document = await service.process_pdf(file_path)
