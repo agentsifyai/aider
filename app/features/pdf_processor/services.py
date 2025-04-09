@@ -1,89 +1,16 @@
 import os
-from typing import List, Dict, Any
+from typing import List
 from PyPDF2 import PdfReader
 from openai import OpenAI, AsyncOpenAI
 from dotenv import load_dotenv
 from app.features.pdf_processor.models import PDFDocument
+from app.features.pdf_processor.prompts import Prompts
 from app.domain.models import MinimalDefect
 import asyncio
 import json
-import re
 
 # Load environment variables
 load_dotenv(override=True)  # Add override=True to force reload
-
-ASSISTANT_SYSTEM_PROMPT = """
-                    You are a helpful assistant that searches through documents and finds relevant info for the user. 
-                    You will be asked to find an information in a document or to infer an information based from the document content.
-                    Document will be delimited using <document> and </document> tags.
-                    Your answer should contain only the information that is relevant to the question.
-                    If there is no information in the document that can be used to answer the question, you should say "I don't know".
-                    Your answer should be in Polish language.
-                    """
-
-
-DEFECTS_LOCATION_INSTRUCTIONS = """\n
-You must provide a location of where the defects report is located.
-It should be within the document, most likely at the beginning or end of the document.
-The location should be identifiable place on the map and should be as concrete as possible.
-
-Example of report beginning:
-<report-beginning-example>
-Zamość, dnia 08 kwietnia 2022 r. 
-PROTOKÓŁ  
-z przeglądu stanu technicznego branży budowlanej w okresie gwarancyjnym 
-budynku Sądu Okręgowego i Rejonowego w Zamościu przeprowadzonego w dniach 21
-25.03.2022 r. sporządzony w dniu 08.04.2022 r. 
-</report-beginning-example>
-
-Desired location output:
-<location-output>
-Sąd Okręgowy i Rejonowy w Zamościu
-</location-output>
-
-Answer with a concrete place, without any introductions or explanations.
-"""
-
-DEFECT_LIST_INSTRUCTIONS = """\n
-You must provide a list of defects from the following report document.
-Document contains various defects in various locations.
-Example of defect format in the doument:
-<defect-examples>
-latarnia doświetleniowa - kiosk I - sala rozpraw nr 30 - zmurszenie blachy (dziura) przy oknie
-P.29A - okno do regulacji
-
-</defect-examples>
-
-Your answer should strictly follow a json format:
-[
-    {
-        "name": "Latarnia doświetleniowa - zmurszenie blachy (dziura) przy oknie",
-        "location":"Sąd Rejonowy w Zamości Kiosk I - sala rozpraw nr 30"
-    },
-    {
-        "name": "Okno do regulacji",
-        "location":"Sąd Rejonowy w Zamości P.29A"
-    }
-]
-
-Destructure the defect in the document as in the example above.
-
-You have to list all of the defects present in the document. Go line by line and extract all the defects from the document. 
-"""
-
-def get_defect_list_instructions(location_prompt: str) -> str:
-    return f"""
-    {DEFECT_LIST_INSTRUCTIONS}
-
-    Each location should mention the concrete defect location e.g. a room number.
-    Locations must also mention information about the building in which the defect is located:
-    {location_prompt}
-
-    """
-
-def get_document_delimited(text: str) -> str:
-    return f"<document>{text}</document>"
-
 
 class PDFProcessorService:
     """Service for processing PDFs and generating summaries."""
@@ -99,7 +26,11 @@ class PDFProcessorService:
         else:
             self.client = OpenAI(api_key=api_key)
             self.client_async = AsyncOpenAI(api_key=api_key)
-    
+        self.prompts = Prompts()
+
+    def get_document_delimited(self, text: str) -> str:
+        return f"<document>{text}</document>"
+
     def read_pdf(self, file_path):
         """Read a PDF file and extract its text content."""
         try:
@@ -127,7 +58,7 @@ class PDFProcessorService:
         max_text_length = 15000  # Approximately 4000 tokens
         if len(text) > max_text_length:
             text = text[:max_text_length] + "... [text truncated due to length]"
-            
+
         try:
             response = self.client.chat.completions.create(
                 model="gpt-4o-mini",
@@ -160,10 +91,10 @@ class PDFProcessorService:
 
     def generate_report_location(self, text) -> str:
         return self.ask_llm(text, [
-                    { "role": "system", "content": ASSISTANT_SYSTEM_PROMPT},
-                    {"role": "user", "content": DEFECTS_LOCATION_INSTRUCTIONS + get_document_delimited(text)},
+                    { "role": "system", "content": self.prompts.get_stored_prompt('assistant_system_prompt')},
+                    {"role": "user", "content": self.prompts.get_stored_prompt('defects_location_instructions') + self.get_document_delimited(text)},
                 ]) + "\n\n"
-    
+
     async def generate_defect_list(self, text: str, location_prompt: str) -> List[MinimalDefect]:
         lines = text.split("\n")
         chunk_size = 15
@@ -171,8 +102,8 @@ class PDFProcessorService:
         async def process_chunk(chunk):
             """Asynchronously process a single chunk."""
             return await self.ask_llm_async(chunk, [
-                {"role": "system", "content": ASSISTANT_SYSTEM_PROMPT},
-                {"role": "user", "content": get_defect_list_instructions(location_prompt) + get_document_delimited(chunk)},
+                {"role": "system", "content": self.prompts.get_stored_prompt('assistant_system_prompt')},
+                {"role": "user", "content": self.prompts.get_defect_list_instructions(location_prompt) + self.get_document_delimited(chunk)},
             ])
 
         # Split text into chunks
@@ -204,14 +135,11 @@ class PDFProcessorService:
         # Join results and return
         return all_defects
 
-
     async def process_pdf(self, file_path):
         """Process a PDF file and return a PDFDocument with summary."""
         filename = os.path.basename(file_path)
         content = self.read_pdf(file_path)
-        
         location = self.generate_report_location(content)
-
         defects_lists = await self.generate_defect_list(content, location)
 
         return PDFDocument(
