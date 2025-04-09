@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('file', file);
 
         try {
-            const response = await fetch('/pdf-processor/upload', {
+            const response = await fetch('/bullet-document-report/upload', {
                 method: 'POST',
                 body: formData
             });
