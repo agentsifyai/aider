@@ -3,8 +3,8 @@ from flask import Blueprint, render_template, request, jsonify, current_app
 from werkzeug.utils import secure_filename
 from app.features.bullet_document_report.services import BulletDocumentReportAnalysisService
 
-pdf_processor_bp = Blueprint('pdf_processor', __name__, 
-                          url_prefix='/pdf-processor',
+bullet_document_report_bp = Blueprint('bullet_document_report', __name__, 
+                          url_prefix='/bullet-document-report',
                           template_folder='template',
                           static_folder='template')  # Serve static files from template directory
 
@@ -13,11 +13,11 @@ ALLOWED_EXTENSIONS = {'pdf'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@pdf_processor_bp.route('/')
+@bullet_document_report_bp.route('/')
 def index():
     return render_template('index.html')
 
-@pdf_processor_bp.route('/upload', methods=['POST'])
+@bullet_document_report_bp.route('/upload', methods=['POST'])
 async def upload_pdf():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
@@ -39,7 +39,7 @@ async def upload_pdf():
         service = BulletDocumentReportAnalysisService()
         
         try:
-            document = await service.process_pdf(file_path)
+            document = await service.process_report(file_path)
             
             # Only remove the file if it exists
             if os.path.exists(file_path):
