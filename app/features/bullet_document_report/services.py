@@ -1,8 +1,8 @@
 from typing import List
 
 from app.infra.llm.service import LLMService
+from app.infra.output.models import DefectList
 from app.infra.pdf.service import PdfAnalyzerService
-from app.infra.pdf.models import PDFDocument
 from app.features.bullet_document_report.prompts import Prompts
 from app.domain.models import MinimalDefect
 
@@ -81,8 +81,8 @@ class BulletDocumentReportAnalysisService:
         location = self.generate_report_location(content)
         defects_list = await self.generate_defect_list(content, location)
 
-        return PDFDocument(
-            filename, 
-            content, 
-            json.dumps(defects_list)# format into json string
-            )
+        return DefectList(
+            filename,
+            content,
+            json.dumps(defects_list) # format into json string
+        )
