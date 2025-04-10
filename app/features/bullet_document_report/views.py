@@ -47,7 +47,7 @@ async def upload_pdf():
             
             return jsonify({
                 'filename': document.filename,
-                'summary': document.summary
+                'summary': document.defect_list
             })
         except Exception as e:
             # Log the error for debugging
