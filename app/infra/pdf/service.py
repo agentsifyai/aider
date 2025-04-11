@@ -10,7 +10,7 @@ class PdfAnalyzerService:
     def read_pdf_as_text(self, file_path):
         """
         Read a PDF file and extract its text content. This function 
-        extracts the text from the PDF using the DocumentConverter library.
+        extracts the text from the PDF using the Docling library.
         It omits any images and non-text elements, focusing solely on the text content.
         """
         try:
