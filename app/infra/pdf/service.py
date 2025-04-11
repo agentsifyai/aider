@@ -7,8 +7,12 @@ class PdfAnalyzerService:
     def __init__(self):
         pass
 
-    def read_pdf(self, file_path):
-        """Read a PDF file and extract its text content."""
+    def read_pdf_as_text(self, file_path):
+        """
+        Read a PDF file and extract its text content. This function 
+        extracts the text from the PDF using the DocumentConverter library.
+        It omits any images and non-text elements, focusing solely on the text content.
+        """
         try:
             # TODO: Consider a separate class for the chosen converter library
             # These options are meant to increase speed.

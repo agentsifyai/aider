@@ -77,7 +77,7 @@ class BulletDocumentReportAnalysisService:
     async def process_report(self, file_path):
         """Process a PDF file and return a PDFDocument with summary."""
         filename = os.path.basename(file_path)
-        content = self.pdf_analyzer.read_pdf(file_path)
+        content = self.pdf_analyzer.read_pdf_as_text(file_path)
         location = self.generate_report_location(content)
         defects_list = await self.generate_defect_list(content, location)
 
