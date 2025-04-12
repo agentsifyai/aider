@@ -1,10 +1,9 @@
 from typing import List
 
 from app.infra.llm.service import LLMService
-from app.infra.output.models import DefectList
 from app.infra.pdf.service import PdfReaderService
 from app.features.bullet_document_report.prompts import Prompts
-from app.domain.models import MinimalDefect
+from app.domain.models import MinimalDefect, DefectList
 
 from dotenv import load_dotenv
 import asyncio
