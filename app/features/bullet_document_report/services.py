@@ -2,7 +2,7 @@ from typing import List
 
 from app.infra.llm.service import LLMService
 from app.infra.output.models import DefectList
-from app.infra.pdf.service import PdfAnalyzerService
+from app.infra.pdf.service import PdfReaderService
 from app.features.bullet_document_report.prompts import Prompts
 from app.domain.models import MinimalDefect
 
@@ -20,7 +20,7 @@ class BulletDocumentReportAnalysisService:
     def __init__(self):
         self.llm: LLMService = LLMService()
         self.prompts: Prompts = Prompts()
-        self.pdf_analyzer: PdfAnalyzerService = PdfAnalyzerService()
+        self.pdf_reader: PdfReaderService = PdfReaderService()
 
 
     def generate_report_location(self, text) -> str:
@@ -77,7 +77,7 @@ class BulletDocumentReportAnalysisService:
     async def process_report(self, file_path):
         """Process a PDF file and return a PDFDocument with summary."""
         filename = os.path.basename(file_path)
-        content = self.pdf_analyzer.read_pdf_as_text(file_path)
+        content = self.pdf_reader.read_pdf_text_as_markdown(file_path)
         location = self.generate_report_location(content)
         defects_list = await self.generate_defect_list(content, location)
 

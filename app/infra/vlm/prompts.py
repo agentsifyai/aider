@@ -1,4 +1,4 @@
-from app.infra.pdf.service import PdfAnalyzerService
+from app.infra.pdf.service import PdfReaderService
 
 class Prompts:
     
@@ -47,7 +47,7 @@ class Prompts:
               "type": "file",
               "file": {
                 "filename": "scannedReport.pdf",
-                "file_data": "data:application/pdf;base64," + PdfAnalyzerService.pdf_to_base64(file_path) 
+                "file_data": "data:application/pdf;base64," + PdfReaderService.pdf_to_base64(file_path) 
               }
             }
           ]
