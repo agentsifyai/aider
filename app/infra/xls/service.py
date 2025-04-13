@@ -28,5 +28,5 @@ class ExcelReaderService:
 
             return text
         except Exception as e:
-            print(f"Error reading PDF: {str(e)}")
-            return f"Error reading PDF: {str(e)}"
+            print(f"Error reading XLS: {str(e)}")
+            return f"Error reading XLS: {str(e)}"
