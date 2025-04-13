@@ -1,17 +1,19 @@
 from docling.document_converter import DocumentConverter
 from docling.datamodel.pipeline_options import PdfPipelineOptions
+from docling.datamodel.pipeline_options import PictureDescriptionBaseOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption, InputFormat
 from docling.backend.docling_parse_v2_backend import DoclingParseV2DocumentBackend
 
-class PdfAnalyzerService:
+import base64
+import os
+
+class PdfReaderService:
     def __init__(self):
         pass
 
-    def read_pdf_as_text(self, file_path):
+    def read_pdf_text_as_markdown(self, file_path):
         """
-        Read a PDF file and extract its text content. This function 
-        extracts the text from the PDF using the Docling library.
-        It omits any images and non-text elements, focusing solely on the text content.
+        Read text from a PDF file and convert it to markdown.
         """
         try:
             # TODO: Consider a separate class for the chosen converter library
@@ -27,7 +29,7 @@ class PdfAnalyzerService:
                 }
             )
             converter_result = doc_converter.convert(file_path)
-            text = converter_result.document.export_to_text()
+            text = converter_result.document.export_to_markdown()
             if not text.strip():
                 return "No readable text found in the PDF. The document might be scanned or contain only images."
 
@@ -35,3 +37,17 @@ class PdfAnalyzerService:
         except Exception as e:
             print(f"Error reading PDF: {str(e)}")
             return f"Error reading PDF: {str(e)}"
+
+        
+    @staticmethod
+    def pdf_to_base64(file_path: str):
+        """
+        Convert a PDF file to base64 string.
+        :param file_path: Path to the PDF file.
+        :return: Base64 encoded string of the PDF file.
+        """
+        with open(file_path, "rb") as pdf_file:
+            base64_pdf = base64.b64encode(pdf_file.read()).decode("utf-8")
+        return base64_pdf
+    
+
