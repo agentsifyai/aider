@@ -1,4 +1,10 @@
 
+class MarkdownReport:
+    content: str
+
+    def __init__(self, content: str) -> None:
+        self.content = content
+
 
 class MinimalDefect:
     """Minimal Defect model for API response."""
