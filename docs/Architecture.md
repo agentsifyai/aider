@@ -13,8 +13,8 @@ config:
 ---
 flowchart TD
     n1["File input"] -- "Pdf, Xls, etc." --> n2["File conversion"]
-    n2 -- Universal Markdown report form --> n3["Report Analysis Strategy Selection"]
-    n3 -- Report Analysis strategy --> n4["Report Analysis using selected strategy"]
+    n2 -- Universal Markdown report form --> n3["Defect Identification Strategy Selection"]
+    n3 -- Report Analysis strategy --> n4["Defect Identification using selected strategy"]
     n4 -- List of Potential Defects --> n5["Defect Details analysis"]
     n5 -- List of Detailed Potential Defects --> n6["Display in UI"]
 
@@ -26,6 +26,8 @@ Let's examine all of the steps taken by our software.
 
 User in UI has a possibility to input a file, we expect a Pdf, Xls or any kind of format from handled report formats.
 
+User should be able to input multiple documents
+
 ### File conversion
 
 Based on the input format of the file and its metadata, we select a method of conversion. 
@@ -34,11 +36,13 @@ Conversion stage should extract as much data as possible from the input document
 
 Conversion result is a text represented in a **markdown format**.
 
-### Report Analysis Strategy Selection
+### Defect Identification Strategy Selection
 
 First, we should define a **report type** as a **certain way of describing defect information and other significant data about the defects within the report**.
 
-Report analysis is done differently for different report types. This step is meant to analyze the contents of the report produced in previous step and based on that select an appropriate analysis strategy.
+Defect Identification is done differently for different report types. This step is meant to analyze the contents of the report produced in previous step and based on that select an appropriate analysis strategy.
+
+The component responsible for strategy selection is a [selection engine](DefectIdentificationSelectionEngine.md).
 
 Selection result is one selected strategy.
 
