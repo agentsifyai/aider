@@ -9,8 +9,15 @@ class MarkdownReport:
 class MinimalDefect:
     """Minimal Defect model for API response."""
 
-    name: str
-    location: str
+    name: str # name of the damage e.g. "crack in lantern"
+    location: str # location of the damage e.g. "front left corner in room no. 15"
+
+
+class PotentialDefect(MinimalDefect):
+    """Potential Defect model for API response."""
+
+    evidence: str # Evidence of the defect in the report e.g. citation
+    confidence: float # 0.0 - 1.0
 
 
 #TODO: Perhaps make Viewmodels.py file later?
