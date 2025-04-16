@@ -1,26 +1,47 @@
 from typing import List
 
+from app.domain.models import PotentialDefect, DetailedPotentialDefect, MarkdownReport, MinimalDefect
+from app.features.defect_report_analysis.strategy.base import DefectIdentificationStrategy, DefectDetailingStrategy
+from app.features.defect_report_analysis.strategy.bullet_report.prompts import Prompts
+
 from app.infra.llm.service import LLMService
-from app.infra.pdf.service import PdfReaderService
-from app.features.bullet_document_report.prompts import Prompts
-from app.domain.models import MinimalDefect, DefectList
 
-from dotenv import load_dotenv
-import asyncio
-import json
-import os
+import asyncio, json
 
-# Load environment variables
-load_dotenv(override=True)  # Add override=True to force reload
 
-class BulletDocumentReportAnalysisService:
-    """Service for processing PDFs and generating summaries."""
-    
+class BulletReportDefectDetailingStrategy(DefectDetailingStrategy):
+    """
+    Bullet Report Defect Detailing Strategy
+    This strategy is used to detail defects in a bullet report type.
+    It uses the bullet report's content and metadata to detail defects.
+    """
+
+    # We can move the state through the constructor if needed
+    def __init__(self, defect_identification_strategy: "BulletReportDefectDetailingStrategy") -> None:
+        super().__init__()
+
+
+    async def detail_defect(self, defect: PotentialDefect) -> DetailedPotentialDefect:
+        raise NotImplementedError("This method should be overridden by subclasses")
+
+
+class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
+    """
+    Bullet Report Defect Identification Strategy
+    This strategy is used to identify defects in a bullet report type.
+    It uses the bullet report's content and metadata to identify defects.
+    """
+
     def __init__(self):
+        super().__init__()
         self.llm: LLMService = LLMService()
         self.prompts: Prompts = Prompts()
-        self.pdf_reader: PdfReaderService = PdfReaderService()
 
+    def selection_criteria() -> str:
+        return NotImplementedError("Not overriden yet")
+    
+    def detailing_strategy(self) -> DefectDetailingStrategy:
+        return BulletReportDefectDetailingStrategy(self)
 
     def generate_report_location(self, text) -> str:
         return self.llm.ask([
@@ -71,17 +92,10 @@ class BulletDocumentReportAnalysisService:
         raw_defect_lists_results = await asyncio.gather(*tasks)
 
         return self.parse_flatten_raw_defect_lists(raw_defect_lists_results)
+    
 
-
-    async def process_report(self, file_path):
-        """Process a PDF file and return a PDFDocument with summary."""
-        filename = os.path.basename(file_path)
-        content = self.pdf_reader.read_pdf_text_as_markdown(file_path)
-        location = self.generate_report_location(content)
-        defects_list = await self.generate_defect_list(content, location)
-
-        return DefectList(
-            filename,
-            content,
-            json.dumps(defects_list) # format into json string
-        )
+    async def identify_defects(self, report: MarkdownReport) -> List[PotentialDefect]:
+        location_prompt = self.generate_report_location(report.content)
+        defects = await self.generate_defect_list(report.content, location_prompt)
+        #TODO: potential defects here
+        return defects
