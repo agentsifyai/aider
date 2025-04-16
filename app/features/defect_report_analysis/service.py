@@ -18,11 +18,20 @@ class DefectList:
     filename: str
     content: str
     defect_list: str
+    defect_amount: int
 
-    def __init__(self, filename: str, content: str, defect_list: str=None):
+    def toJSON(self):
+        return json.dumps(
+            self,
+            default=lambda o: o.__dict__, 
+            sort_keys=True,
+            indent=4)
+
+    def __init__(self, filename: str, content: str, defect_list: str=None, amount: int=None):
         self.filename = filename
         self.content = content
         self.defect_list = defect_list
+        self.defect_amount = amount
 
 
 # Service
@@ -45,5 +54,6 @@ class DefectReportAnalysisService:
         return DefectList(
             filename,
             content,
-            json.dumps(defects_list) # format into json string
+            json.dumps(defects_list), # format into json string
+            len(defects_list)
         )

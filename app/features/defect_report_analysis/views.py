@@ -3,6 +3,8 @@ from flask import Blueprint, render_template, request, jsonify, current_app
 from werkzeug.utils import secure_filename
 from app.features.defect_report_analysis.service import DefectReportAnalysisService
 
+import json
+
 
 defect_report_analysis = Blueprint('defect_report_analysis', __name__, 
                           url_prefix='/defect-report-analysis',
@@ -40,16 +42,14 @@ async def upload_pdf():
         service = DefectReportAnalysisService()
         
         try:
-            document = await service.process_report(file_path)
+            defect_list_viewmodel = await service.process_report(file_path)
             
             # Only remove the file if it exists
             if os.path.exists(file_path):
                 os.remove(file_path)  # Clean up the uploaded file
             
-            return jsonify({
-                'filename': document.filename,
-                'summary': document.defect_list
-            })
+            return defect_list_viewmodel.toJSON(), 200
+        
         except Exception as e:
             # Log the error for debugging
             print(f"Error processing PDF: {str(e)}")

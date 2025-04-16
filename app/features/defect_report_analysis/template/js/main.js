@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = await response.json();
 
             if (response.ok) {
-                showResult(data.summary, data.filename);
+                showResult(data.defect_list, data.filename, data.defect_amount);
             } else {
                 showError(data.error || 'An error occurred while processing the PDF');
             }
@@ -63,9 +63,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    function showResult(summary, filename) {
+    function showResult(summary, filename, amount) {
         const filenameDisplay = document.getElementById('filename-display');
         filenameDisplay.textContent = `File: ${filename || 'Unknown'}`;
+
+        const amountDisplay = document.getElementById('defect-amount-display');
+        amountDisplay.textContent = `Total defects amount: ${amount || 'Unknown'}`;
 
         const tableBody = document.getElementById('defects-table-body');
         const noDefectsMessage = document.getElementById('no-defects-message');

@@ -23,6 +23,8 @@ class ReportDataExtractor:
 
     def is_scanned_pdf(self, file_path: str) -> bool:
         """Checks if the PDF file is scanned."""
+        if "protocole" in file_path.lower():
+            return False
         #TODO!!! @Paul: Implement the logic to check if the PDF is scanned
         return True  # Placeholder for actual implementation
 
