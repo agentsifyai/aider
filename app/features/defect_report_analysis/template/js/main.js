@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('file', file);
 
         try {
-            const response = await fetch('/bullet-document-report/upload', {
+            const response = await fetch('/defect-report-analysis/upload', {
                 method: 'POST',
                 body: formData
             });
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = await response.json();
 
             if (response.ok) {
-                showResult(data.summary, data.filename);
+                showResult(data.defect_list, data.filename, data.defect_amount);
             } else {
                 showError(data.error || 'An error occurred while processing the PDF');
             }
@@ -63,9 +63,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    function showResult(summary, filename) {
+    function showResult(summary, filename, amount) {
         const filenameDisplay = document.getElementById('filename-display');
         filenameDisplay.textContent = `File: ${filename || 'Unknown'}`;
+
+        const amountDisplay = document.getElementById('defect-amount-display');
+        amountDisplay.textContent = `Total defects amount: ${amount || 'Unknown'}`;
 
         const tableBody = document.getElementById('defects-table-body');
         const noDefectsMessage = document.getElementById('no-defects-message');
@@ -85,6 +88,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 // We have defects to display in the table
                 defects.forEach(defect => {
                     const row = document.createElement('tr');
+
+                    const confidenceCell = document.createElement('td');
+                    confidenceCell.textContent = defect.confidence || 'Unknown confidence';
+                    row.appendChild(confidenceCell);
 
                     const nameCell = document.createElement('td');
                     nameCell.textContent = defect.name || 'Unknown defect';

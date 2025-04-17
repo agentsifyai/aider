@@ -18,30 +18,13 @@ class PotentialDefect(MinimalDefect):
 
     evidence: str # Evidence of the defect in the report e.g. citation
     confidence: float # 0.0 - 1.0
+    confidence_reason: str # Reason for the confidence level e.g. "The defect is clearly visible in the document."
+
+    def __str__(self):
+        return f"PotentialDefect(name={self.name}, location={self.location}, evidence={self.evidence}, confidence={self.confidence}, confidence_reason={self.confidence_reason})\n"
 
 
-#TODO: Perhaps make Viewmodels.py file later?
-class DefectList:
-    """Model for the generated list of defects."""
-    def __init__(self, filename: str, content: str, defect_list: str=None):
-        self.filename = filename
-        self.content = content
-        self.defect_list = defect_list
+class DetailedPotentialDefect(PotentialDefect):
+    """Detailed Potential Defect model for API response."""
 
-    def get_filename(self) -> str:
-        return self.filename
-
-    def get_content(self) -> str:
-        return self.content
-
-    def get_defect_list(self) -> str:
-        return self.defect_list
-
-    def set_filename(self, filename: str) -> None:
-        self.filename = filename
-
-    def set_content(self, content: str) -> None:
-        self.content = content
-
-    def set_defect_list(self, defect_list) -> None:
-        self.defect_list = defect_list
+    description: str # Verbose description of the defect e.g. "The crack in the lantern is 5 cm long and 2 cm wide."

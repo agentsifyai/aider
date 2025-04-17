@@ -10,12 +10,10 @@ def create_app(config_name='default'):
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
     # Import and register blueprints for features
-    from app.features.bullet_document_report.views import bullet_document_report_bp
-    from app.features.excel_processor.views import excel_processor_bp
+    from app.features.defect_report_analysis.views import defect_report_analysis
     
-    app.register_blueprint(bullet_document_report_bp)
-    app.register_blueprint(excel_processor_bp)
-    
+    app.register_blueprint(defect_report_analysis)
+
     # Register home page route
     @app.route('/')
     def home():
