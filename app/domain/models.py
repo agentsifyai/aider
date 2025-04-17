@@ -18,6 +18,10 @@ class PotentialDefect(MinimalDefect):
 
     evidence: str # Evidence of the defect in the report e.g. citation
     confidence: float # 0.0 - 1.0
+    confidence_reason: str # Reason for the confidence level e.g. "The defect is clearly visible in the document."
+
+    def __str__(self):
+        return f"PotentialDefect(name={self.name}, location={self.location}, evidence={self.evidence}, confidence={self.confidence}, confidence_reason={self.confidence_reason})\n"
 
 
 class DetailedPotentialDefect(PotentialDefect):

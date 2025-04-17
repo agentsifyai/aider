@@ -6,8 +6,15 @@ from app.features.defect_report_analysis.strategy.bullet_report.prompts import P
 
 from app.infra.llm.service import LLMService
 
-import asyncio, json
+import asyncio, json, logging
 
+# Configure logging
+logging.basicConfig(
+    filename="defects.log",  # Log file name
+    encoding="utf-8",            # Log file encoding
+    level=logging.INFO,             # Log level
+    format="%(asctime)s - %(levelname)s - %(message)s"  # Log format
+)
 
 class BulletReportDefectDetailingStrategy(DefectDetailingStrategy):
     """
@@ -45,19 +52,19 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
 
     def generate_report_location(self, text) -> str:
         return self.llm.ask([
-                    { "role": "system", "content": self.prompts.get_stored_prompt('assistant_system_prompt')},
+                    { "role": "system", "content": self.prompts.ASSISSTANT_SYSTEM_PROMPT },
                     {"role": "user", "content": self.prompts.get_stored_prompt('defects_location_instructions') + Prompts.delimit_document(text)},
                 ]) + "\n\n"
     
 
-    def parse_flatten_raw_defect_lists(self, defect_lists_strings: List[str]) -> List[MinimalDefect]:
+    def parse_flatten_raw_defect_lists(self, defect_lists_strings: List[str]) -> List[PotentialDefect]:
         """Parse the raw defect list JSONs into a List of Minimal Defects."""
-        all_defects: List[MinimalDefect] = []
+        all_defects: List[PotentialDefect] = []
 
         for raw_defect_list in defect_lists_strings:
             sanitized_defect_list = raw_defect_list.replace("```", "").replace("json", '').replace("I don't know.", "").replace("I don't know", "")
             try:
-                chunk_found_defects: List[MinimalDefect] = json.loads(sanitized_defect_list)
+                chunk_found_defects: List[PotentialDefect] = json.loads(sanitized_defect_list)
                 if isinstance(chunk_found_defects, list):
                     print(f"Found {len(chunk_found_defects)} defects in chunk.")
                     all_defects.extend(chunk_found_defects)
@@ -71,14 +78,14 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
         return all_defects
 
 
-    async def generate_defect_list(self, text: str, location_prompt: str) -> List[MinimalDefect]:
+    async def generate_defect_list(self, text: str, location_prompt: str) -> List[PotentialDefect]:
         lines = text.split("\n")
         chunk_size = 15
 
         async def process_chunk(chunk):
             """Asynchronously process a single chunk."""
             return await self.llm.ask_async([
-                {"role": "system", "content": self.prompts.get_stored_prompt('assistant_system_prompt')},
+                {"role": "system", "content": self.prompts.ASSISSTANT_SYSTEM_PROMPT },
                 {"role": "user", "content": self.prompts.get_defect_list_instructions(location_prompt) + Prompts.delimit_document(chunk)},
             ])
 
@@ -97,5 +104,5 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     async def identify_defects(self, report: MarkdownReport) -> List[PotentialDefect]:
         location_prompt = self.generate_report_location(report.content)
         defects = await self.generate_defect_list(report.content, location_prompt)
-        #TODO: potential defects here
+        print(f"Defects identified: {defects}")
         return defects

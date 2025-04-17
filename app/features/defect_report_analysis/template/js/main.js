@@ -89,6 +89,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 defects.forEach(defect => {
                     const row = document.createElement('tr');
 
+                    const confidenceCell = document.createElement('td');
+                    confidenceCell.textContent = defect.confidence || 'Unknown confidence';
+                    row.appendChild(confidenceCell);
+
                     const nameCell = document.createElement('td');
                     nameCell.textContent = defect.name || 'Unknown defect';
                     row.appendChild(nameCell);
