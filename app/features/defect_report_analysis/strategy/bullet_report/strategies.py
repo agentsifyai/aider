@@ -1,20 +1,13 @@
-from typing import List
+from typing import List, Dict
 
-from app.domain.models import PotentialDefect, DetailedPotentialDefect, MarkdownReport, MinimalDefect
+from app.domain.models import PotentialDefect, DetailedPotentialDefect, MarkdownReport
 from app.features.defect_report_analysis.strategy.base import DefectIdentificationStrategy, DefectDetailingStrategy
 from app.features.defect_report_analysis.strategy.bullet_report.prompts import Prompts
+from app.features.defect_report_analysis.strategy.bullet_report.chunker import LocationSectionChunker
 
 from app.infra.llm.service import LLMService
 
-import asyncio, json, logging
-
-# Configure logging
-logging.basicConfig(
-    filename="defects.log",  # Log file name
-    encoding="utf-8",            # Log file encoding
-    level=logging.INFO,             # Log level
-    format="%(asctime)s - %(levelname)s - %(message)s"  # Log format
-)
+import asyncio, json
 
 class BulletReportDefectDetailingStrategy(DefectDetailingStrategy):
     """
@@ -39,10 +32,13 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     It uses the bullet report's content and metadata to identify defects.
     """
 
+    metadata: Dict[str, str] = {}
+    llm: LLMService = LLMService()
+    prompts: Prompts = Prompts()
+    chunker: LocationSectionChunker = LocationSectionChunker()
+
     def __init__(self):
         super().__init__()
-        self.llm: LLMService = LLMService()
-        self.prompts: Prompts = Prompts()
 
     def selection_criteria() -> str:
         return NotImplementedError("Not overriden yet")
@@ -50,13 +46,12 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     def detailing_strategy(self) -> DefectDetailingStrategy:
         return BulletReportDefectDetailingStrategy(self)
 
-    def generate_report_location(self, text) -> str:
+    def generate_location_metadata(self, text) -> str:
         return self.llm.ask([
                     { "role": "system", "content": self.prompts.ASSISSTANT_SYSTEM_PROMPT },
                     {"role": "user", "content": self.prompts.get_stored_prompt('defects_location_instructions') + Prompts.delimit_document(text)},
-                ]) + "\n\n"
+                ])
     
-
     def parse_flatten_raw_defect_lists(self, defect_lists_strings: List[str]) -> List[PotentialDefect]:
         """Parse the raw defect list JSONs into a List of Minimal Defects."""
         all_defects: List[PotentialDefect] = []
@@ -77,24 +72,21 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
         # Join results and return
         return all_defects
 
+    async def process_chunk(self,chunk):
+        """Asynchronously process a single chunk."""
+        return await self.llm.ask_async([
+            {"role": "system", "content": self.prompts.ASSISSTANT_SYSTEM_PROMPT },
+            {"role": "user", "content": self.prompts.get_defect_list_instructions(self.metadata["location"]) + Prompts.delimit_document(chunk)},
+        ])
 
-    async def generate_defect_list(self, text: str, location_prompt: str) -> List[PotentialDefect]:
-        lines = text.split("\n")
-        chunk_size = 15
-
-        async def process_chunk(chunk):
-            """Asynchronously process a single chunk."""
-            return await self.llm.ask_async([
-                {"role": "system", "content": self.prompts.ASSISSTANT_SYSTEM_PROMPT },
-                {"role": "user", "content": self.prompts.get_defect_list_instructions(location_prompt) + Prompts.delimit_document(chunk)},
-            ])
-
+    async def generate_defect_list(self, text: str) -> List[PotentialDefect]:
         # Split text into chunks
-        chunks = ["\n".join(lines[i:i + chunk_size]) for i in range(0, len(lines), chunk_size)]
-
+        print("Report chunking")
+        chunks = await self.chunker.get_chunks(text)
+        print(chunks)
         # Create asyncio tasks for each chunk
-        tasks = [process_chunk(chunk) for chunk in chunks]
-
+        tasks = [self.process_chunk(chunk) for chunk in chunks]
+        print("Defect list generation")
         # Run tasks concurrently and gather results
         raw_defect_lists_results = await asyncio.gather(*tasks)
 
@@ -102,7 +94,9 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     
 
     async def identify_defects(self, report: MarkdownReport) -> List[PotentialDefect]:
-        location_prompt = self.generate_report_location(report.content)
-        defects = await self.generate_defect_list(report.content, location_prompt)
+        print("Identifying defects in bullet report...")
+        print("Inferring location metadata...")
+        self.metadata["location"] = self.generate_location_metadata(report.content)
+        defects = await self.generate_defect_list(report.content)
         print(f"Defects identified: {defects}")
         return defects

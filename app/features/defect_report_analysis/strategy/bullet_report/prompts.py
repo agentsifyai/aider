@@ -44,12 +44,19 @@ class Prompts(CommonPrompts):
     """
 
     DEFECT_LIST_INTRUCTIONS = """
-        You must provide a list of defects from the following report document.
+        Your task is to provide a list of defects found in the document.
+        The document is a report of defects related to construction.
         Document contains various defects in various locations.
-        Example of defect format in the document:
+
+        Defects in the report may be expressed in different ways, but they are usually in the form of a list.
+
+        Here are examples of defects with the way of expressing them:
+
         <defect-examples>
+        ## DACH S.O.
         latarnia doświetleniowa - kiosk I - sala rozpraw nr 30 - zmurszenie blachy (dziura) przy oknie
         P.29A - okno do regulacji
+
         6. **Km 55+308 (od strony Warszawy):**
         1. Przemieszczenie (osiadanie) biegu schodów skarpowych u podnóża skarpy.
         2. Przemieszczenie brukowej kostki kamiennej w dolnej części umocnienia skarpy – pomiędzy schodami skarpowymi a oparciem ściany oporowej z gruntu zbrojonego.
@@ -57,7 +64,7 @@ class Prompts(CommonPrompts):
 
         For each found defect you should answer with:
         name - the short name of the damage
-        location - as exact as possible location of the damage 
+        location - as exact as possible location of the damage. In most cases it should be provided at the beginning of the document. 
         confidence - 0.0 - 1.0 number that indicates how sure you are about the damage being defective.
         confidence_reason - the reason for the confidence level
         evidence - the evidence of the defect in the report e.g. citation
@@ -66,14 +73,14 @@ class Prompts(CommonPrompts):
         [
             {
                 "name": "Latarnia doświetleniowa - zmurszenie blachy (dziura) przy oknie",
-                "location":"Sąd Rejonowy w Zamości Kiosk I - sala rozpraw nr 30",
+                "location":"Kiosk I - sala rozpraw nr 30 DACH S.O.",
                 "confidence": 1.0,
                 "confidence_reason": "The defect is clearly visible in the document.",
                 "evidence": "latarnia doświetleniowa - kiosk I - sala rozpraw nr 30 - zmurszenie blachy (dziura) przy oknie"
             },
             {
                 "name": "Okno do regulacji",
-                "location":"Sąd Rejonowy w Zamości P.29A",
+                "location":"P.29A DACH S.O.",
                 "confidence": 1.0,
                 "confidence_reason": "The defect is clearly visible in the document.",
                 "evidence": "P.29A - okno do regulacji"
@@ -98,6 +105,54 @@ class Prompts(CommonPrompts):
 
         You have to list all of the defects present in the document. No defect should be omitted.
 
+    """
+
+    CHUNKING_INSTRUCTIONS = """
+        Your task is to chunk the document into smaller parts.
+        The document is a report of defects related to construction.
+
+        Document should have sections where each section consists of a heading and a content.
+        The heading is a concrete location present in the place the report was taken.
+        The content is a list of defects related to the location.
+
+        You should answer with a list of strings, where each string is a chunk of the document.
+
+        Your answer should strictly follow a JSON format:
+
+        [
+        "Chunk 1", "Chunk 2", "Chunk 3"
+        ]
+
+        Example of an output:
+
+        <example>
+        [
+        "5. **WD-26 w km 55+308 (od strony Gdańska):**
+        - zarysowania na ściance oporowej nazięskowej niżsy łożyskowej – lewa strona drogi krajowej,
+        - przemieszczenie osłonienia drenażu kontenera.",
+        "3. **MA-33 w km 54+146 w ciągu prawej jezdni:**
+        - przemieszczenie obrzęża i kostki kamiennej pod obiektem pod rurą odwodnienia zapryczółkowego – przy przyczółku od strony Gdańska,
+        - przemieszczenie się wkładki uszczelniającej szczelinę pomiędzy ścianką boczną przyczółka i skrzydłem.",
+        "7. **Km 57+670 (wiadukt w ciągu ul. Żuławskiej):**
+        - ubytki spoinowania opornika betonowego stożka usytuowanego na końcu ściany oporowej z prawej strony drogi krajowej,
+        - lokalne spękania prefabrykatów ściany oporowej – prawa strona drogi krajowej,
+        - pojedyncze podłużne pęknięcie deski gzymsowej – prawa strona drogi krajowej,
+        - odspojenie materiału plastycznego (sikaflexu) w spoinach dylatacyjnych z betonem oczełu ściany oporowej – prawa strona drogi krajowej.",
+        "## Pokoje sędziowskie:
+        - 3.49. P.54 -nie stwierdzono wad;
+        - 3.50. P. 55 -zarysowania tynku ściany nad ościeżnicą ;
+        - 3.51. P.56 -zarysowania tynku ściany przy drzwiach i opad nięte drzwi;
+        - 3.52. P.57 -nie stwierdzono wad;
+        - 3.53. P.58 -zarysowania tynku ściany;"
+        ]
+        </example>
+
+        You must process all the document and not omit any part of it. 
+        If a section does not correspond to the previous definition of a section, you should include it in the output as well.
+
+        Provide only a JSON array without any introductions or explanations.
+        Do not include any other text in the output.
+        
     """
 
     # TODO: Define more setter and getter methods.
