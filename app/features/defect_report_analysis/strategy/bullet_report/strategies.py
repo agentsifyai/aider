@@ -48,7 +48,7 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
 
     def generate_location_metadata(self, text) -> str:
         return self.llm.ask([
-                    { "role": "system", "content": self.prompts.ASSISSTANT_SYSTEM_PROMPT },
+                    { "role": "system", "content": self.prompts.ASSISTANT_SYSTEM_PROMPT },
                     {"role": "user", "content": self.prompts.get_stored_prompt('defects_location_instructions') + Prompts.delimit_document(text)},
                 ])
     
@@ -75,7 +75,7 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     async def process_chunk(self,chunk):
         """Asynchronously process a single chunk."""
         return await self.llm.ask_async([
-            {"role": "system", "content": self.prompts.ASSISSTANT_SYSTEM_PROMPT },
+            {"role": "system", "content": self.prompts.ASSISTANT_SYSTEM_PROMPT },
             {"role": "user", "content": self.prompts.get_defect_list_instructions(self.metadata["location"]) + Prompts.delimit_document(chunk)},
         ])
 
