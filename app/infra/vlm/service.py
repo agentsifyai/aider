@@ -15,9 +15,9 @@ class VlmService:
 
     def __init__(self):
         api_key = os.getenv('OPENAI_API_KEY')
-        print(f"Loading OpenAI API key: {'Found' if api_key else 'Not found'}")
+        logging.info(f"Loading OpenAI API key: {'Found' if api_key else 'Not found'}")
         if not api_key:
-            print("WARNING: OPENAI_API_KEY environment variable is not set")
+            logging.warning("WARNING: OPENAI_API_KEY environment variable is not set")
             # We'll initialize without the key, but operations will fail
             self.client = None
             self.client_async = None
