@@ -11,6 +11,7 @@ class PdfReaderService:
     page_break_number = 0
 
     def get_page_break_value(self) -> str:
+        self.page_break_number += 1
         return f'--- Page {self.page_break_number} ---'
 
     def read_pdf_text_as_markdown(self, file_path):
