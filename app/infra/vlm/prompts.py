@@ -1,7 +1,7 @@
 from app.infra.pdf.service import PdfReaderService
 
 class Prompts:
-    
+
     def __init__(self):
         self.scanned_report_system_prompt = """
         You will receive a PDF document as an attachment. 
@@ -11,11 +11,14 @@ class Prompts:
 
         You should use markdown headings for labels that could be considered as headings, and adjust heading levels for each embedded heading. Use lists and other markdown features as well when necessary.
 
-        The contents of the report must remain uchanged and in the same language as the original. You must extract all possible data from the scanned report.
+        The contents of the report must remain unchanged and in the same language as the original. You must extract all possible data from the scanned report.
 
         You must not omit the contained images within the scanned report. 
 
         If an image is contained within the report document, you have to replace it with a detailed description of what is in the image, considering that the image represents things related to the construction defects described in the report. 
+
+        You must delimit each page of the report with a line containing the text '--- Page X ---', where X is the page number. 
+        Page numbering starts from 1. Therefore, first page must start with --- Page 1 --- and so on. 
 
         Answer with the markdown content only - do not include greetings etc.
         """
