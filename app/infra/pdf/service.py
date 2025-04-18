@@ -4,7 +4,7 @@ from docling.datamodel.pipeline_options import PictureDescriptionBaseOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption, InputFormat
 from docling.backend.docling_parse_v2_backend import DoclingParseV2DocumentBackend
 
-import base64
+import logging, base64
 
 class PdfReaderService:
 
@@ -37,7 +37,7 @@ class PdfReaderService:
 
             return text
         except Exception as e:
-            print(f"Error reading PDF: {str(e)}")
+            logging.error(f"Error reading PDF: {str(e)}")
             return f"Error reading PDF: {str(e)}"
 
     @staticmethod

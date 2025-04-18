@@ -6,7 +6,7 @@ from app.features.defect_report_analysis.strategy.detailed_report.prompts import
 
 from app.infra.llm.service import LLMService
 
-import asyncio, json
+import asyncio, json, logging
 
 
 class DetailedReportDefectDetailingStrategy(DefectDetailingStrategy):
@@ -48,7 +48,7 @@ class DetailedReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     async def generate_defect_list(self, text: str) -> List[PotentialDefect]:
         # Split text into chunks
         # Create asyncio tasks for each chunk
-        print("Defect list generation")
+        logging.info("Generating defect list...")
         result = await self.llm.ask_async([
             {"role": "system", "content": self.prompts.ASSISSTANT_SYSTEM_PROMPT },
             {"role": "user", "content": self.prompts.DEFECT_LIST_INTRUCTIONS + Prompts.delimit_document(text)},
@@ -59,6 +59,7 @@ class DetailedReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     
 
     async def identify_defects(self, report: MarkdownReport) -> List[PotentialDefect]:
+        logging.info("Identifying defects with Detailed Report Id strategy...")
         defects = await self.generate_defect_list(report.content)
-        print(f"Defects identified: {defects}")
+        logging.debug(f"Defects identified: {defects}")
         return defects

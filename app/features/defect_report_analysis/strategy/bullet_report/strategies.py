@@ -7,7 +7,7 @@ from app.features.defect_report_analysis.strategy.bullet_report.chunker import L
 
 from app.infra.llm.service import LLMService
 
-import asyncio, json
+import asyncio, json, logging
 
 class BulletReportDefectDetailingStrategy(DefectDetailingStrategy):
     """
@@ -61,13 +61,13 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
             try:
                 chunk_found_defects: List[PotentialDefect] = json.loads(sanitized_defect_list)
                 if isinstance(chunk_found_defects, list):
-                    print(f"Found {len(chunk_found_defects)} defects in chunk.")
+                    logging.debug(f"Found {len(chunk_found_defects)} defects in chunk.")
                     all_defects.extend(chunk_found_defects)
                 else:
-                    print(f"Unexpected result: {raw_defect_list}")
+                    logging.warning(f"Unexpected result: {raw_defect_list}")
             except json.JSONDecodeError as e:
-                print(f"JSON decode error: {str(e)}")
-                print(f"Raw defect list: {raw_defect_list}")
+                logging.error(f"JSON decode error: {str(e)}")
+                logging.debug(f"Raw defect list: {raw_defect_list}")
 
         # Join results and return
         return all_defects
@@ -81,12 +81,12 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
 
     async def generate_defect_list(self, text: str) -> List[PotentialDefect]:
         # Split text into chunks
-        print("Report chunking")
+        logging.info("Report chunking")
         chunks = await self.chunker.get_chunks(text)
-        print(chunks)
+        logging.debug(chunks)
         # Create asyncio tasks for each chunk
         tasks = [self.process_chunk(chunk) for chunk in chunks]
-        print("Defect list generation")
+        logging.info("Defect list generation")
         # Run tasks concurrently and gather results
         raw_defect_lists_results = await asyncio.gather(*tasks)
 
@@ -94,9 +94,9 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     
 
     async def identify_defects(self, report: MarkdownReport) -> List[PotentialDefect]:
-        print("Identifying defects in bullet report...")
-        print("Inferring location metadata...")
+        logging.info("Identifying defects in bullet report...")
+        logging.debug("Inferring location metadata...")
         self.metadata["location"] = self.generate_location_metadata(report.content)
         defects = await self.generate_defect_list(report.content)
-        print(f"Defects identified: {defects}")
+        logging.debug(f"Defects identified: {defects}")
         return defects

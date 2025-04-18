@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, request, jsonify, current_app
 from werkzeug.utils import secure_filename
 from app.features.defect_report_analysis.service import DefectReportAnalysisService
 
+import logging
 
 defect_report_analysis = Blueprint('defect_report_analysis', __name__, 
                           url_prefix='/defect-report-analysis',
@@ -50,12 +51,12 @@ async def upload_pdf():
         
         except Exception as e:
             # Log the error for debugging
-            print(f"Error processing PDF: {str(e)}")
+            logging.error(f"Error processing file: {str(e)}")
             
             # Try to clean up the file even if processing failed
             if os.path.exists(file_path):
                 os.remove(file_path)
                 
-            return jsonify({'error': f"Failed to process PDF: {str(e)}"}), 500
+            return jsonify({'error': f"Failed to process file: {str(e)}"}), 500
     
     return jsonify({'error': 'Invalid file type'}), 400
