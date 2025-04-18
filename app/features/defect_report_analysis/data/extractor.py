@@ -5,13 +5,6 @@ from app.infra.xls.service import ExcelReaderService
 
 import logging
 
-# Configure logging
-logging.basicConfig(
-    filename="markdown_report.log",  # Log file name
-    encoding="utf-8",            # Log file encoding
-    level=logging.INFO,             # Log level
-    format="%(asctime)s - %(levelname)s - %(message)s"  # Log format
-)
 
 class ReportDataExtractor:
     file_path: str
