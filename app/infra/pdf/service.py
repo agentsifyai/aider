@@ -5,11 +5,16 @@ from docling.document_converter import DocumentConverter, PdfFormatOption, Input
 from docling.backend.docling_parse_v2_backend import DoclingParseV2DocumentBackend
 
 import base64
-import os
 
 class PdfReaderService:
     def __init__(self):
-        pass
+        self.page_break_value = '---This is an Agentsify page break.---'
+
+    def get_page_break_value(self) -> str:
+        return self.page_break_value
+
+    def set_page_break_value(self, new_page_break_value: str) -> None:
+        self.page_break_value = new_page_break_value
 
     def read_pdf_text_as_markdown(self, file_path):
         """
@@ -29,7 +34,7 @@ class PdfReaderService:
                 }
             )
             converter_result = doc_converter.convert(file_path)
-            text = converter_result.document.export_to_markdown()
+            text = converter_result.document.export_to_markdown(page_break_placeholder=self.get_page_break_value())
             if not text.strip():
                 return "No readable text found in the PDF. The document might be scanned or contain only images."
 
@@ -38,7 +43,6 @@ class PdfReaderService:
             print(f"Error reading PDF: {str(e)}")
             return f"Error reading PDF: {str(e)}"
 
-        
     @staticmethod
     def pdf_to_base64(file_path: str):
         """
@@ -49,5 +53,3 @@ class PdfReaderService:
         with open(file_path, "rb") as pdf_file:
             base64_pdf = base64.b64encode(pdf_file.read()).decode("utf-8")
         return base64_pdf
-    
-
