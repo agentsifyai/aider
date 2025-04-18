@@ -7,14 +7,11 @@ from docling.backend.docling_parse_v2_backend import DoclingParseV2DocumentBacke
 import base64
 
 class PdfReaderService:
-    def __init__(self):
-        self.page_break_value = '---This is an Agentsify page break.---'
+
+    page_break_number = 0
 
     def get_page_break_value(self) -> str:
-        return self.page_break_value
-
-    def set_page_break_value(self, new_page_break_value: str) -> None:
-        self.page_break_value = new_page_break_value
+        return f'--- Page {self.page_break_number} ---'
 
     def read_pdf_text_as_markdown(self, file_path):
         """
