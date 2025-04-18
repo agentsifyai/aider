@@ -6,8 +6,7 @@ from app.features.defect_report_analysis.strategy.bullet_report.strategies impor
 from app.features.defect_report_analysis.strategy.detailed_report.strategies import DetailedReportDefectIdentificationStrategy
 
 from dotenv import load_dotenv
-import json
-import os
+import json, logging, os
 
 # Load environment variables
 load_dotenv(override=True)  # Add override=True to force reload
@@ -52,9 +51,13 @@ class DefectReportAnalysisService:
             BulletReportDefectIdentificationStrategy(),
         ]
 
+        logging.info(f"Processing file: {filename}")
         content = await self.extractor.extract_markdown(file_path)
-        defects_list = await self.strategies[0].identify_defects(content)
 
+        logging.info("Generating defect list...")
+        defects_list = await self.strategies[0].identify_defects(content)
+        
+        logging.info("Processing finished. Returning processed data to view...")
         return DefectList(
             filename,
             content,

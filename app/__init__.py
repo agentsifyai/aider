@@ -1,15 +1,15 @@
 from flask import Flask, render_template
 import os
-import glob
-
 import logging
+
 
 logging.basicConfig(
     filename="log.log",  # Log file name
     encoding="utf-8",            # Log file encoding
-    level=logging.DEBUG,             # Log level
+    level=logging.INFO,             # Log level
     format="%(asctime)s - %(levelname)s - %(message)s"  # Log format
 )
+
 
 def create_app(config_name='default'):
     app = Flask(__name__)

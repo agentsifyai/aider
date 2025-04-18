@@ -3,8 +3,6 @@ from flask import Blueprint, render_template, request, jsonify, current_app
 from werkzeug.utils import secure_filename
 from app.features.defect_report_analysis.service import DefectReportAnalysisService
 
-import json
-
 
 defect_report_analysis = Blueprint('defect_report_analysis', __name__, 
                           url_prefix='/defect-report-analysis',
