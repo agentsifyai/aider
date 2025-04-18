@@ -13,7 +13,9 @@ class Prompts:
 
         The contents of the report must remain uchanged and in the same language as the original. You must extract all possible data from the scanned report.
 
-        If an image is contained within the report document, you should replace it with a detailed description of what is in the image, considering that the image represents things related to the construction defects described in the report. 
+        You must not omit the contained images within the scanned report. 
+
+        If an image is contained within the report document, you have to replace it with a detailed description of what is in the image, considering that the image represents things related to the construction defects described in the report. 
 
         Answer with the markdown content only - do not include greetings etc.
         """

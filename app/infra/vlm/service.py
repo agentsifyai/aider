@@ -40,7 +40,7 @@ class VlmService:
             return "Error: OpenAI API key not configured. Please set the OPENAI_API_KEY environment variable."
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4o",
+                model="gpt-4.1",
                 messages=self.prompts.get_scanned_report_messages(file_path),
                 temperature=0.8,
             )

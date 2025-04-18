@@ -3,6 +3,7 @@ from typing import List
 from app.features.defect_report_analysis.data.extractor import ReportDataExtractor
 
 from app.features.defect_report_analysis.strategy.bullet_report.strategies import BulletReportDefectIdentificationStrategy
+from app.features.defect_report_analysis.strategy.detailed_report.strategies import DetailedReportDefectIdentificationStrategy
 
 from dotenv import load_dotenv
 import json
@@ -40,13 +41,16 @@ class DefectReportAnalysisService:
     
     def __init__(self):
         self.extractor = ReportDataExtractor()
-        self.strategies = [
-            BulletReportDefectIdentificationStrategy(),
-        ]
+
 
     async def process_report(self, file_path: str):
         """Process a defect report file"""
         filename = os.path.basename(file_path)
+
+        self.strategies = [
+            DetailedReportDefectIdentificationStrategy(),
+            BulletReportDefectIdentificationStrategy(),
+        ]
 
         content = await self.extractor.extract_markdown(file_path)
         defects_list = await self.strategies[0].identify_defects(content)
