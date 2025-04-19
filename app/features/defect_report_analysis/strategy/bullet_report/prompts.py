@@ -12,6 +12,7 @@ class Prompts(CommonPrompts):
             'defect_list_instructions': self.DEFECT_LIST_INSTRUCTIONS
         }
 
+#TODO assistant_system_prompt should be moved to the common prompts file.
     ASSISTANT_SYSTEM_PROMPT = """
         You are a professional assistant that searches through documents and finds relevant information for the user. 
         You will be asked to find an information in a document or to infer an information based from the document content.
@@ -115,53 +116,6 @@ class Prompts(CommonPrompts):
 
     """
 
-    CHUNKING_INSTRUCTIONS = """
-        Your task is to chunk the document into smaller parts.
-        The document is a report of defects related to construction.
-
-        Document should have sections where each section consists of a heading and a content.
-        The heading is a concrete location present in the place the report was taken.
-        The content is a list of defects related to the location.
-
-        You should answer with a list of strings, where each string is a chunk of the document.
-
-        Your answer should strictly follow a JSON format:
-
-        [
-        "Chunk 1", "Chunk 2", "Chunk 3"
-        ]
-
-        Example of an output:
-
-        <example>
-        [
-        "5. **WD-26 w km 55+308 (od strony Gdańska):**
-        - zarysowania na ściance oporowej nazięskowej niżsy łożyskowej – lewa strona drogi krajowej,
-        - przemieszczenie osłonienia drenażu kontenera.",
-        "3. **MA-33 w km 54+146 w ciągu prawej jezdni:**
-        - przemieszczenie obrzęża i kostki kamiennej pod obiektem pod rurą odwodnienia zapryczółkowego – przy przyczółku od strony Gdańska,
-        - przemieszczenie się wkładki uszczelniającej szczelinę pomiędzy ścianką boczną przyczółka i skrzydłem.",
-        "7. **Km 57+670 (wiadukt w ciągu ul. Żuławskiej):**
-        - ubytki spoinowania opornika betonowego stożka usytuowanego na końcu ściany oporowej z prawej strony drogi krajowej,
-        - lokalne spękania prefabrykatów ściany oporowej – prawa strona drogi krajowej,
-        - pojedyncze podłużne pęknięcie deski gzymsowej – prawa strona drogi krajowej,
-        - odspojenie materiału plastycznego (sikaflexu) w spoinach dylatacyjnych z betonem oczełu ściany oporowej – prawa strona drogi krajowej.",
-        "## Pokoje sędziowskie:
-        - 3.49. P.54 -nie stwierdzono wad;
-        - 3.50. P. 55 -zarysowania tynku ściany nad ościeżnicą ;
-        - 3.51. P.56 -zarysowania tynku ściany przy drzwiach i opad nięte drzwi;
-        - 3.52. P.57 -nie stwierdzono wad;
-        - 3.53. P.58 -zarysowania tynku ściany;"
-        ]
-        </example>
-
-        You must process all the document and not omit any part of it. 
-        If a section does not correspond to the previous definition of a section, you should include it in the output as well.
-
-        Provide only a JSON array without any introductions or explanations.
-        Do not include any other text in the output.
-        
-    """
 
     # TODO: Define more setter and getter methods.
     def get_stored_prompts(self) -> dict:
@@ -181,4 +135,4 @@ class Prompts(CommonPrompts):
             """
 
         return formatted_defect_list_instructions
-    
+

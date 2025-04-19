@@ -3,7 +3,7 @@ from typing import List, Dict
 from app.domain.models import PotentialDefect, DetailedPotentialDefect, MarkdownReport
 from app.features.defect_report_analysis.strategy.base import DefectIdentificationStrategy, DefectDetailingStrategy
 from app.features.defect_report_analysis.strategy.bullet_report.prompts import Prompts
-from app.features.defect_report_analysis.strategy.bullet_report.chunker import LocationSectionChunker
+from app.features.defect_report_analysis.strategy.bullet_report.chunker import LocationSectionChunker, Chunk
 
 from app.infra.llm.service import LLMService
 
@@ -72,11 +72,12 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
         # Join results and return
         return all_defects
 
-    async def process_chunk(self,chunk):
+    async def process_chunk(self,chunk: Chunk):
         """Asynchronously process a single chunk."""
         return await self.llm.ask_async([
             {"role": "system", "content": self.prompts.ASSISTANT_SYSTEM_PROMPT },
-            {"role": "user", "content": self.prompts.get_defect_list_instructions(self.metadata["location"]) + Prompts.delimit_document(chunk)},
+            {"role": "user", "content": self.prompts.get_defect_list_instructions(self.metadata["location"]) 
+             + Prompts.delimit_document(f"Page {chunk.page_number}\n" + chunk.chunk_content) },
         ])
 
     async def generate_defect_list(self, text: str) -> List[PotentialDefect]:

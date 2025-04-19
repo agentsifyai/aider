@@ -55,7 +55,7 @@ class DefectReportAnalysisService:
         content = await self.extractor.extract_markdown(file_path)
 
         logging.info("Generating defect list...")
-        defects_list = await self.strategies[0].identify_defects(content)
+        defects_list = await self.strategies[1].identify_defects(content)
         
         logging.info("Processing finished. Returning processed data to view...")
         return DefectList(

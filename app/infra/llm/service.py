@@ -7,7 +7,7 @@ import logging
 
 class LLMService:
 
-    DEFAULT_MODEL = "gpt-4.1"
+    DEFAULT_MODEL = "gpt-4.1-mini"
 
     def __init__(self):
         api_key = os.getenv('OPENAI_API_KEY')
