@@ -3,10 +3,10 @@ from typing import List
 from app.features.defect_report_analysis.data.extractor import ReportDataExtractor
 
 from app.features.defect_report_analysis.strategy.bullet_report.strategies import BulletReportDefectIdentificationStrategy
+from app.features.defect_report_analysis.strategy.detailed_report.strategies import DetailedReportDefectIdentificationStrategy
 
 from dotenv import load_dotenv
-import json
-import os
+import json, logging, os
 
 # Load environment variables
 load_dotenv(override=True)  # Add override=True to force reload
@@ -40,17 +40,24 @@ class DefectReportAnalysisService:
     
     def __init__(self):
         self.extractor = ReportDataExtractor()
-        self.strategies = [
-            BulletReportDefectIdentificationStrategy(),
-        ]
+
 
     async def process_report(self, file_path: str):
         """Process a defect report file"""
         filename = os.path.basename(file_path)
 
-        content = await self.extractor.extract_markdown(file_path)
-        defects_list = await self.strategies[0].identify_defects(content)
+        self.strategies = [
+            DetailedReportDefectIdentificationStrategy(),
+            BulletReportDefectIdentificationStrategy(),
+        ]
 
+        logging.info(f"Processing file: {filename}")
+        content = await self.extractor.extract_markdown(file_path)
+
+        logging.info("Generating defect list...")
+        defects_list = await self.strategies[1].identify_defects(content)
+        
+        logging.info("Processing finished. Returning processed data to view...")
         return DefectList(
             filename,
             content,

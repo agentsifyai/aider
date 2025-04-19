@@ -2,6 +2,8 @@ from docling.document_converter import DocumentConverter
 from docling.datamodel.base_models import OutputFormat
 from docling.document_converter import ExcelFormatOption
 
+import logging
+
 class ExcelReaderService:
     def __init__(self):
         pass
@@ -28,5 +30,5 @@ class ExcelReaderService:
 
             return text
         except Exception as e:
-            print(f"Error reading XLS: {str(e)}")
+            logging.error(f"Error reading XLS: {str(e)}")
             return f"Error reading XLS: {str(e)}"

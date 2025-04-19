@@ -1,7 +1,14 @@
+from dataclasses import dataclass
 from typing import List
-import json
+
 from app.features.defect_report_analysis.strategy.bullet_report.prompts import Prompts
 from app.infra.llm.service import LLMService
+
+@dataclass
+class Chunk:
+    chunk_content: str
+    page_number: int
+
 
 class LocationSectionChunker:
     """
@@ -11,14 +18,15 @@ class LocationSectionChunker:
     prompts = Prompts()
     llm = LLMService()
 
+    async def get_chunks(self, text: str) -> List[Chunk]:
+        """Split the text into chunks of 30 lines with an overlap of 10 lines."""
+        lines = text.splitlines()  # Split the text into individual lines
+        chunk_size = 24
+        overlap = 8
 
-    async def get_chunks(self, text: str) -> List[str]:
-        """Get chunks of text from the report."""
-        # This method should be implemented to return the chunks of text from the report.
-        result: str = await self.llm.ask_async([
-                {"role": "system", "content": self.prompts.ASSISSTANT_SYSTEM_PROMPT },
-                {"role": "user", "content": self.prompts.CHUNKING_INSTRUCTIONS + Prompts.delimit_document(text)},
-        ])
+        chunks = []
+        for i in range(0, len(lines), chunk_size - overlap):
+            chunk = lines[i:i + chunk_size]
+            chunks.append("\n".join(chunk))  # Combine lines back into a single string
 
-        chunks: List[str] = json.loads(result)
-        return chunks
+        return [Chunk(chunk_content=chunk, page_number=i // chunk_size + 1) for i, chunk in enumerate(chunks)]

@@ -5,13 +5,6 @@ from app.infra.xls.service import ExcelReaderService
 
 import logging
 
-# Configure logging
-logging.basicConfig(
-    filename="markdown_report.log",  # Log file name
-    encoding="utf-8",            # Log file encoding
-    level=logging.INFO,             # Log level
-    format="%(asctime)s - %(levelname)s - %(message)s"  # Log format
-)
 
 class ReportDataExtractor:
     file_path: str
@@ -25,16 +18,18 @@ class ReportDataExtractor:
         """Checks if the PDF file is scanned."""
         if "protocole" in file_path.lower():
             return False
-        #TODO!!! @Paul: Implement the logic to check if the PDF is scanned
+        # TODO: Find out a faster way to get a count of images and actual text.
         return True  # Placeholder for actual implementation
 
     def handle_pdfs(self, file_path) -> str:
         """Handles PDF files."""
+        # Attempt to read the text from the PDF. If the first pass has no text, use the VLM to read it.
+        pdf_res = self.pdf_reader.read_pdf_text_as_markdown(file_path)
         # Use the VLM service to extract text from scanned PDFs
-        if self.is_scanned_pdf(file_path):
+        if pdf_res == 'No readable text found in the PDF. The document might be scanned or contain only images.':
             return self.vlm.extract_scanned_report_as_markdown(file_path)
-
-        return self.pdf_reader.read_pdf_text_as_markdown(file_path)
+        else:
+            return pdf_res
 
     async def extract_markdown(self, file_path: str) -> MarkdownReport:
         """Extracts content from a file as markdown."""
@@ -46,7 +41,7 @@ class ReportDataExtractor:
                 content = self.excel_reader.read_excel_text_as_markdown(file_path)
             case _:
                 raise ValueError("Unsupported file type. Only PDF and Excel files are supported.")
-        
+
         logging.info("Extracted Markdown Report:\n%s", content)
 
         return MarkdownReport(content)
