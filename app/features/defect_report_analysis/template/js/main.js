@@ -108,17 +108,60 @@ document.addEventListener('DOMContentLoaded', function () {
     function populateDefectsTable(defects, tableBody) {
         defects.forEach(defect => {
             const row = document.createElement('tr');
-
+    
             const confidenceCell = createTableCell(defect.confidence || 'Unknown confidence');
             const nameCell = createTableCell(defect.name || 'Unknown defect');
             const locationCell = createTableCell(defect.location || 'Unknown location');
-
+    
+            // Create dropdown button cell
+            const dropdownCell = document.createElement('td');
+            const dropdownButton = document.createElement('button');
+            dropdownButton.textContent = 'Details';
+            dropdownButton.classList.add('dropdown-button');
+            dropdownCell.appendChild(dropdownButton);
+    
             row.appendChild(confidenceCell);
             row.appendChild(nameCell);
             row.appendChild(locationCell);
-
+            row.appendChild(dropdownCell);
+    
             tableBody.appendChild(row);
+    
+            // Create additional info row (hidden by default)
+            const additionalInfoRow = document.createElement('tr');
+            additionalInfoRow.classList.add('additional-info-row');
+            additionalInfoRow.style.display = 'none';
+    
+            const additionalInfoCell = document.createElement('td');
+            additionalInfoCell.colSpan = 4; // Span across all columns
+            additionalInfoCell.innerHTML = renderAdditionalInfo(defect) || '<p>No additional information available</p>';
+            additionalInfoRow.appendChild(additionalInfoCell);
+    
+            tableBody.appendChild(additionalInfoRow);
+    
+            // Add event listener to toggle visibility of additional info
+            dropdownButton.addEventListener('click', () => {
+                const isVisible = additionalInfoRow.style.display === 'table-row';
+                additionalInfoRow.style.display = isVisible ? 'none' : 'table-row';
+            });
         });
+    }
+
+    function renderAdditionalInfo(defect) {
+        if (!defect) {
+            return '<p>No additional information available</p>';
+        }
+    
+        const infoEntries = [
+            { label: 'Confidence Reason', value: defect.confidence_reason ?? 'Unknown' },
+            { label: 'Evidence', value: defect.evidence ? "<i>" + defect.evidence + "</i>" : 'Unknown' },
+            { label: 'Severity', value: defect.severity ?? 'Unknown' }, // Example of an additional field
+            { label: 'Reported By', value: defect.reported_by ?? 'Unknown' } // Example of another additional field
+        ];
+    
+        return infoEntries
+            .map(entry => `<p><b>${entry.label}:</b> ${entry.value}</p>`)
+            .join('');
     }
 
     function createTableCell(content) {
