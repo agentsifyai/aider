@@ -3,6 +3,30 @@
 {% block title %}PDF Processor{% endblock %}
 
 {% block content %}
+<!-- dropdown button styling possibly to be moved to different css file -->
+<style>
+    .dropdown-button {
+        background-color: #007bff; /* Blue background */
+        color: white; /* White text */
+        border: none; /* Remove border */
+        padding: 8px 12px; /* Add padding for better spacing */
+        font-size: 14px; /* Adjust font size */
+        cursor: pointer; /* Pointer cursor on hover */
+        border-radius: 5px; /* Rounded corners */
+        transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth hover effect */
+    }
+
+    .dropdown-button:hover {
+        background-color: #0056b3; /* Darker blue on hover */
+        transform: scale(1.02); /* Slightly enlarge the button on hover */
+    }
+
+    .dropdown-button:active {
+        background-color: #003f7f; /* Even darker blue when clicked */
+        transform: scale(0.95); /* Slightly shrink the button when clicked */
+    }
+</style>
+
 <div class="page-container">
     <h1>PDF Processor</h1>
     <p>Upload a PDF file to get an AI-generated summary.</p>
@@ -39,6 +63,7 @@
                             <th>Confidence</th>
                             <th>Defect</th>
                             <th>Location</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="defects-table-body">
