@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
     fileInput.addEventListener('change', function () {
         const file = fileInput.files[0];
         if (file) {
-            fileSelectedMessage.textContent = `The PDF "${file.name}" has been uploaded. Press "Process PDF" to continue.`;
+            fileSelectedMessage.textContent = `The file "${file.name}" has been uploaded. Press "Process PDF" to continue.`;
             fileSelected.style.display = 'block';
         } else {
             fileSelected.style.display = 'none';
@@ -23,8 +23,8 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
 
         // Reset previous results
-        resultSection.style.display = 'none';
-        errorSection.style.display = 'none';
+        toggleVisibility(resultSection, false);
+        toggleVisibility(errorSection, false);
 
         const file = fileInput.files[0];
 
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             // Hide loading spinner
-            loadingContainer.style.display = 'none';
+            toggleVisibility(loadingContainer, false);
 
             const data = await response.json();
 
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         } catch (error) {
             // Hide loading spinner in case of error
-            loadingContainer.style.display = 'none';
+            toggleVisibility(loadingContainer, false);
             showError('An error occurred while uploading the file');
         }
     });
@@ -85,32 +85,15 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (Array.isArray(defects) && defects.length > 0) {
-                // We have defects to display in the table
-                defects.forEach(defect => {
-                    const row = document.createElement('tr');
-
-                    const confidenceCell = document.createElement('td');
-                    confidenceCell.textContent = defect.confidence || 'Unknown confidence';
-                    row.appendChild(confidenceCell);
-
-                    const nameCell = document.createElement('td');
-                    nameCell.textContent = defect.name || 'Unknown defect';
-                    row.appendChild(nameCell);
-
-                    const locationCell = document.createElement('td');
-                    locationCell.textContent = defect.location || 'Unknown location';
-                    row.appendChild(locationCell);
-
-                    tableBody.appendChild(row);
-                });
+                populateDefectsTable(defects, tableBody);
 
                 // Show the table, hide the no defects message
-                tableContainer.style.display = 'block';
-                noDefectsMessage.style.display = 'none';
+                toggleVisibility(tableContainer, true);
+                toggleVisibility(noDefectsMessage, false);
             } else {
                 // No defects found
-                tableContainer.style.display = 'none';
-                noDefectsMessage.style.display = 'block';
+                toggleVisibility(tableContainer, false);
+                toggleVisibility(noDefectsMessage, true);
             }
         } catch (error) {
             // Handle parsing error
@@ -118,13 +101,39 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        resultSection.style.display = 'block';
-        errorSection.style.display = 'none';
+        toggleVisibility(resultSection, true);
+        toggleVisibility(errorSection, false);
+    }
+
+    function populateDefectsTable(defects, tableBody) {
+        defects.forEach(defect => {
+            const row = document.createElement('tr');
+
+            const confidenceCell = createTableCell(defect.confidence || 'Unknown confidence');
+            const nameCell = createTableCell(defect.name || 'Unknown defect');
+            const locationCell = createTableCell(defect.location || 'Unknown location');
+
+            row.appendChild(confidenceCell);
+            row.appendChild(nameCell);
+            row.appendChild(locationCell);
+
+            tableBody.appendChild(row);
+        });
+    }
+
+    function createTableCell(content) {
+        const cell = document.createElement('td');
+        cell.textContent = content;
+        return cell;
+    }
+
+    function toggleVisibility(element, isVisible) {
+        element.style.display = isVisible ? 'block' : 'none';
     }
 
     function showError(message) {
         errorMessage.textContent = message;
-        errorSection.style.display = 'block';
-        resultSection.style.display = 'none';
+        toggleVisibility(errorSection, true);
+        toggleVisibility(resultSection, false);
     }
-}); 
+});
