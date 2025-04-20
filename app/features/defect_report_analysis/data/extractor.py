@@ -29,30 +29,20 @@ class ReportDataExtractor:
         # Use the VLM service to extract text from scanned PDFs
 
         try:
-            converter = DocumentConverter()
-            result = converter.convert(file_path)
+            content = self._add_page_breaks(file_path)
+            if content and "<!-- Page" in content and len(content.strip()) > 20:
+                return content
+        except Exception as e:
+            logging.warning(f"Docling failed, trying fallback: {str(e)}")
 
-            pages = result.document.pages
-            content_chunks = []
-            text_found = False
-            for i, page in enumerate(pages):
-                text = getattr(page, "text", "").strip()
-                if text:
-                    text_found = True
-                content_chunks.append(f"<!-- Page {i + 1} -->\n{text}")
-
-            if not text_found:
-                logging.warning("Docling returned no page text — falling back to PdfReaderService")
-                raise ValueError("Docling returned empty")
-
-            return "\n\n".join(content_chunks)
-        except Exception:
-        # fallback if anything fails
-            pdf_res = self.pdf_reader.read_pdf_text_as_markdown(file_path)
-            if pdf_res == 'No readable text found in the PDF. The document might be scanned or contain only images.':
+        try:
+            raw = self.pdf_reader.read_pdf_text_as_markdown(file_path)
+            if 'No readable text' in raw:
                 return self.vlm.extract_scanned_report_as_markdown(file_path)
-            else:
-                return pdf_res
+            return raw
+        except Exception as e:
+            logging.error(f"PDF fallback failed: {str(e)}")
+            return self.vlm.extract_scanned_report_as_markdown(file_path)
         
     def _add_page_breaks(self, file_path: str) -> str:
         try:
@@ -100,8 +90,9 @@ class ReportDataExtractor:
                 raise ValueError("Unsupported file type. Only PDF and Excel files are supported.")
 
         # Page breaks and flatten tables
+        if not content or len(content.strip()) < 10:
+            raise ValueError("Empty or invalid content extracted from file.")
+        
         final_markdown = self._flatten_tables(content)
-
         logging.info("Extracted Markdown Report:\n%s", final_markdown)
-
-        return MarkdownReport(content)
+        return MarkdownReport(final_markdown)
