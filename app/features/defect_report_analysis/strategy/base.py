@@ -8,6 +8,13 @@ class DefectDetailingStrategy:
 
 
 class DefectIdentificationStrategy:
+
+    def strategy_name(self):
+        print(type(self).__name__)
+    
+    def __str__(self):
+        return self.strategy_name()
+
     def selection_criteria() -> str:
         raise NotImplementedError("This method should be overridden by subclasses")
     
