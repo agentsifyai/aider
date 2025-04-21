@@ -30,10 +30,16 @@ class ReportDataExtractor:
 
         try:
             content = self._add_page_breaks(file_path)
-            if content and "<!-- Page" in content and len(content.strip()) > 20:
+            has_substantial_text = any(len(getattr(p, "text", "").strip()) > 30
+                                   for p in DocumentConverter().convert(file_path).document.pages)
+            if has_substantial_text:
                 return content
+            else:
+                logging.warning("Docling returned mostly empty content, falling back to PdfReaderService.")
+
         except Exception as e:
-            logging.warning(f"Docling failed, trying fallback: {str(e)}")
+            logging.warning(f"Docling failed, trying fallback: {str(e)}")        
+        # If the PDF is scanned, use the VLM service to extract text
 
         try:
             raw = self.pdf_reader.read_pdf_text_as_markdown(file_path)
