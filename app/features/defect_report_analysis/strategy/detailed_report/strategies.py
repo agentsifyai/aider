@@ -39,8 +39,12 @@ class DetailedReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     def __init__(self):
         super().__init__()
 
-    def selection_criteria() -> str:
-        return NotImplementedError("Not overriden yet")
+    def selection_criteria(self) -> str:
+        return """
+        - The report contains detailed information about defects.
+        - Report is a single document containing various information about the defects.
+        - The report is not a bullet report.
+        """
     
     def detailing_strategy(self) -> DefectDetailingStrategy:
         return DetailedReportDefectDetailingStrategy(self)

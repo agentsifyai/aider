@@ -10,12 +10,12 @@ class DefectDetailingStrategy:
 class DefectIdentificationStrategy:
 
     def strategy_name(self):
-        print(type(self).__name__)
+        return type(self).__name__
     
     def __str__(self):
         return self.strategy_name()
 
-    def selection_criteria() -> str:
+    def selection_criteria(self) -> str:
         raise NotImplementedError("This method should be overridden by subclasses")
     
     def detailing_strategy(self) -> DefectDetailingStrategy:
