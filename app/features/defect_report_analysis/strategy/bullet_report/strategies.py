@@ -44,8 +44,8 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
         return f"""
         - The report contains a list of defects in bullet format.
         - The bullet-listed defects may be grouped in sections by their location.
-        - The listed defects are not well detailed.
-        - List consists of briefly described defects, each with a location.
+        - For each listed defect there is no much information aside from the name and the appropriate location.
+        - Aside from the list of the defects, report may contain other information, but the defect list is the main content of the document.
         """
     
     def detailing_strategy(self) -> DefectDetailingStrategy:
