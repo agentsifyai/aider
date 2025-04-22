@@ -41,9 +41,10 @@ class DetailedReportDefectIdentificationStrategy(DefectIdentificationStrategy):
 
     def selection_criteria(self) -> str:
         return """
+        - Report does contain sections each describing different details of the defect.
         - The report contains detailed information about defects.
-        - Report is a single document containing various information about the defects.
-        - The report is not a bullet report.
+        - Report may contain defect doucumentation, such as screenshots, logs, or other artifacts.
+        - Report does not contain bulk defect lists.
         """
     
     def detailing_strategy(self) -> DefectDetailingStrategy:
