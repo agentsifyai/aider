@@ -4,10 +4,13 @@ from app.domain.models import MarkdownReport
 from app.features.defect_report_analysis.strategy.base import DefectIdentificationStrategy
 from app.infra.llm.service import LLMService
 
+from app.features.defect_report_analysis.common.prompts import Prompts
+
 import logging
 
 ROUTER_SYSTEM_PROMPT = """
-You will be provided a defect report and a list of strategies for defect identification.
+You will be provided a defect report document and a list of strategies for defect identification.
+The defect report document will be provided in a markdown format and delimited by <document> tags.
 The strategies criteria will be presented using a strategy name followed by its selection criteria.
 Your task is to choose the most appropriate strategy based on the content of the report and the selection criteria.
 """
@@ -38,7 +41,7 @@ class StrategyRouter:
         {self._strategies_criteria_prompt()}
 
         Here is the defect report:
-        {report}
+        {Prompts.delimit_document(report.content)}
 
         Please select the appropriate strategy for defect identification based on the content of the report.
         Your answer should be the name of the strategy only.
@@ -59,5 +62,5 @@ class StrategyRouter:
             if strategy.strategy_name() in response:
                 logging.warning("Selected strategy: %s", strategy.strategy_name())
                 return strategy
-        
-        return None # replace with a default strategy or raise an error if no strategy is found
+            
+        raise ValueError(f"Strategy not found in response: {response}") # replace with a default strategy
