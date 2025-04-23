@@ -1,10 +1,11 @@
 from typing import List
 
+from app.domain.models import DetailedPotentialDefect
+from app.features.defect_report_analysis.strategy.router import StrategyRouter
 from app.features.defect_report_analysis.data.extractor import ReportDataExtractor
-
 from app.features.defect_report_analysis.strategy.bullet_report.strategies import BulletReportDefectIdentificationStrategy
 from app.features.defect_report_analysis.strategy.detailed_report.strategies import DetailedReportDefectIdentificationStrategy
-from app.features.defect_report_analysis.strategy.router import StrategyRouter
+
 
 from dotenv import load_dotenv
 import json, logging, os
@@ -13,12 +14,12 @@ import json, logging, os
 load_dotenv(override=True)  # Add override=True to force reload
 
 # Viewmodel
-class DefectList:
+class DefectListView:
     """Model for the generated list of defects."""
 
     filename: str
     content: str
-    defect_list: str
+    defect_list: List[DetailedPotentialDefect]
     defect_amount: int
 
     def toJSON(self):
@@ -28,11 +29,11 @@ class DefectList:
             sort_keys=True,
             indent=4)
 
-    def __init__(self, filename: str, content: str, defect_list: str=None, amount: int=None):
+    def __init__(self, filename: str, content: str, defect_list: List[DetailedPotentialDefect]):
         self.filename = filename
         self.content = content
         self.defect_list = defect_list
-        self.defect_amount = amount
+        self.defect_amount = len(defect_list)
 
 
 # Service
@@ -62,9 +63,4 @@ class DefectReportAnalysisService:
         defects_list = await strategy.identify_defects(content)
         
         logging.info("Processing finished. Returning processed data to view...")
-        return DefectList(
-            filename,
-            content,
-            json.dumps(defects_list), # format into json string
-            len(defects_list)
-        )
+        return DefectListView(filename, content, defects_list)

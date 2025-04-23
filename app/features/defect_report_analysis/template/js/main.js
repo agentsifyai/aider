@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    function showResult(summary, filename, amount) {
+    function showResult(defectList, filename, amount) {
         const filenameDisplay = document.getElementById('filename-display');
         filenameDisplay.textContent = `File: ${filename || 'Unknown'}`;
 
@@ -78,11 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
         tableBody.innerHTML = '';
 
         try {
-            // Try to parse the JSON if it's a string
-            let defects = summary;
-            if (typeof summary === 'string') {
-                defects = JSON.parse(summary);
-            }
+            let defects = defectList;
 
             if (Array.isArray(defects) && defects.length > 0) {
                 populateDefectsTable(defects, tableBody);
@@ -97,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         } catch (error) {
             // Handle parsing error
-            showError(`Could not parse defects data: ${error.message}. Raw data: ${summary}`);
+            showError(`Could not parse defects data: ${error.message}. Raw data: ${defectList}`);
             return;
         }
 
