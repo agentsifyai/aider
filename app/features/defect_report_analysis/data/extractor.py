@@ -5,6 +5,7 @@ from app.infra.xls.service import ExcelReaderService
 from docling.document_converter import DocumentConverter
 import re
 import logging
+from PyPDF2 import PdfReader
 
 
 class ReportDataExtractor:
@@ -28,38 +29,34 @@ class ReportDataExtractor:
         # pdf_res = self.pdf_reader.read_pdf_text_as_markdown(file_path)
         # Use the VLM service to extract text from scanned PDFs
 
+        # 1) Try splitting into pages
         try:
             content = self._add_page_breaks(file_path)
-            has_substantial_text = any(len(getattr(p, "text", "").strip()) > 30
-                                   for p in DocumentConverter().convert(file_path).document.pages)
-            if has_substantial_text:
+            total_chars = sum(len(p) for p in content.split("<!-- Page"))
+            if total_chars > 20:
                 return content
-            else:
-                logging.warning("Docling returned mostly empty content, falling back to PdfReaderService.")
-
+            logging.warning("PyPDF2 saw almost no text, falling back to PdfReaderService.")
         except Exception as e:
-            logging.warning(f"Docling failed, trying fallback: {str(e)}")        
-        # If the PDF is scanned, use the VLM service to extract text
+            logging.warning(f"PyPDF2 split failed: {e}")
 
+        # 2) Fallback: PdfReaderService (might return 'No readable text')
         try:
             raw = self.pdf_reader.read_pdf_text_as_markdown(file_path)
-            if 'No readable text' in raw:
+            if "No readable text" in raw:
                 return self.vlm.extract_scanned_report_as_markdown(file_path)
             return raw
         except Exception as e:
-            logging.error(f"PDF fallback failed: {str(e)}")
+            logging.error(f"PdfReaderService failed: {e}")
             return self.vlm.extract_scanned_report_as_markdown(file_path)
         
     def _add_page_breaks(self, file_path: str) -> str:
         try:
-            converter = DocumentConverter()
-            result = converter.convert(file_path)
-
+            reader = PdfReader(file_path)
             chunks = []
-            for i, page in enumerate(result.document.pages):
-                text = getattr(page, "text", "")
-                logging.info(f"Page {i+1} content:\n{text}")
-                chunks.append(f"<!-- Page {i + 1} -->\n{text.strip()}")
+            for i, page in enumerate(reader.pages):
+            # page.extract_text() returns the raw Unicode text on that page
+                text = page.extract_text() or ""
+                chunks.append(f"<!-- Page {i+1} -->\n{text.strip()}")
 
             return "\n\n".join(chunks)
 
@@ -102,3 +99,15 @@ class ReportDataExtractor:
         final_markdown = self._flatten_tables(content)
         logging.info("Extracted Markdown Report:\n%s", final_markdown)
         return MarkdownReport(final_markdown)
+
+if __name__ == "__main__":
+    import asyncio, sys
+
+    if len(sys.argv) != 2:
+        print("Usage: python extractor.py <path-to-pdf>")
+        sys.exit(1)
+
+    extractor = ReportDataExtractor()
+    md_report = asyncio.run(extractor.extract_markdown(sys.argv[1]))
+    print(md_report.content)
+
