@@ -1,25 +1,11 @@
 # Vertical Slice Architecture
 
-This project demonstrates how to apply **Vertical Slice Architecture** to a Flask web application, where the application is organized by **features**, not technical layers.
-
-[YouTube Demo – Vertical Slice Architecture](https://www.youtube.com/watch?v=dabeidyv5dg&t=1656s)
-
 ## Features
 
 Located in the `/app/features` directory. Each feature encapsulates its own logic and dependencies:
 
 - `pdf_processor` – Summarizes content from PDF files using the ChatGPT API.
 - `excel_processor` – Processes Excel files and summarizes them using the ChatGPT API.
-
-## Live Demo
-
-[https://aider-dpna.onrender.com/](https://aider-dpna.onrender.com/)
-
-## Development Process
-
-- Initial development with [Cursor](https://www.cursor.com/) and [Claude API](https://www.anthropic.com/)
-- Feature updaets with [Aider](https://aider.chat/docs/install.html) and [Claude API](https://www.anthropic.com/)
-- Deployed with [Render](https://render.com/)
 
 ## Project Structure
 
