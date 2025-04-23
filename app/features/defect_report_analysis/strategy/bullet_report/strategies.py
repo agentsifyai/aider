@@ -40,8 +40,13 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     def __init__(self):
         super().__init__()
 
-    def selection_criteria() -> str:
-        return NotImplementedError("Not overriden yet")
+    def selection_criteria(self) -> str:
+        return f"""
+        - The report contains a list of defects in bullet format.
+        - The bullet-listed defects may be grouped in sections by their location.
+        - For each listed defect there is no much information aside from the name and the appropriate location.
+        - Aside from the list of the defects, report may contain other information, but the defect list is the main content of the document.
+        """
     
     def detailing_strategy(self) -> DefectDetailingStrategy:
         return BulletReportDefectDetailingStrategy(self)

@@ -4,6 +4,7 @@ from app.features.defect_report_analysis.data.extractor import ReportDataExtract
 
 from app.features.defect_report_analysis.strategy.bullet_report.strategies import BulletReportDefectIdentificationStrategy
 from app.features.defect_report_analysis.strategy.detailed_report.strategies import DetailedReportDefectIdentificationStrategy
+from app.features.defect_report_analysis.strategy.router import StrategyRouter
 
 from dotenv import load_dotenv
 import json, logging, os
@@ -54,8 +55,11 @@ class DefectReportAnalysisService:
         logging.info(f"Processing file: {filename}")
         content = await self.extractor.extract_markdown(file_path)
 
+        logging.info(f"Choosing strategy...")
+        strategy = await StrategyRouter(self.strategies).choose_strategy(content)
+
         logging.info("Generating defect list...")
-        defects_list = await self.strategies[1].identify_defects(content)
+        defects_list = await strategy.identify_defects(content)
         
         logging.info("Processing finished. Returning processed data to view...")
         return DefectList(

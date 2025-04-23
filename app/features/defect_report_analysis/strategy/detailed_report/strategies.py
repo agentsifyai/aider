@@ -39,8 +39,13 @@ class DetailedReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     def __init__(self):
         super().__init__()
 
-    def selection_criteria() -> str:
-        return NotImplementedError("Not overriden yet")
+    def selection_criteria(self) -> str:
+        return """
+        - The report contains sections describing different aspects of the defects.
+        - Report may contain defect doucumentation, such as screenshots, logs, or other artifacts.
+        - Defects in the report are described in a single section, whereas other sections in the report contain other information about the defects.
+        - The report may contain a summary of the defects, but the details are in the sections.
+        """
     
     def detailing_strategy(self) -> DefectDetailingStrategy:
         return DetailedReportDefectDetailingStrategy(self)
