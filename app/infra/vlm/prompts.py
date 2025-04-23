@@ -17,8 +17,8 @@ class Prompts:
 
         If an image is contained within the report document, you have to replace it with a detailed description of what is in the image, considering that the image represents things related to the construction defects described in the report. 
 
-        You must delimit each page of the report with a line containing the text '--- Page X ---', where X is the page number. 
-        Page numbering starts from 1. Therefore, first page must start with --- Page 1 --- and so on. 
+        You must delimit each page of the report with a line containing the text '<!-- Page X -->', where X is the page number. 
+        Page numbering starts from 1. Therefore, first page must start with <!-- Page 1 --> and so on. 
 
         Answer with the markdown content only - do not include greetings etc.
         """

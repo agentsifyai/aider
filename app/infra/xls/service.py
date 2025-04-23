@@ -8,7 +8,7 @@ class ExcelReaderService:
     def __init__(self):
         pass
 
-    def read_pdf_text_as_markdown(self, file_path: str) -> str:
+    def read_excel_as_markdown(self, file_path: str) -> str:
         """
         Read text from an XLS file and convert it to markdown.
         """

@@ -95,7 +95,7 @@ class ReportDataExtractor:
             case file_path if file_path.endswith('.pdf'):
                 content = self.handle_pdfs(file_path)
             case file_path if file_path.endswith('.xlsx') or file_path.endswith('.xls'):
-                content = self.excel_reader.read_excel_text_as_markdown(file_path)
+                content = self.excel_reader.read_excel_as_markdown(file_path)
             case _:
                 raise ValueError("Unsupported file type. Only PDF and Excel files are supported.")
 
