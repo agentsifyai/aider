@@ -16,22 +16,28 @@ class ReportDataExtractor:
         self.pdf_reader = PdfReaderService()
         self.excel_reader = ExcelReaderService()
 
-    def is_scanned_pdf(self, file_path: str) -> bool:
+    def _is_scanned_pdf(self, file_path: str) -> bool:
         """Checks if the PDF file is scanned."""
-        if "protocole" in file_path.lower():
-            return False
-        # TODO: Find out a faster way to get a count of images and actual text.
-        return True  # Placeholder for actual implementation
+        pdf_metrics = self.pdf_reader.get_pdf_metrics(file_path)
+        logging.debug(f"PDF metrics: {pdf_metrics}")
+        if pdf_metrics['num_chars'] < 20 and pdf_metrics['num_images'] > 0:
+            logging.info(f"Scanned PDF detected: {file_path}")
+            return True
+        # TODO: Detect mixed content (text + images)
+        return False  
 
-    def handle_pdfs(self, file_path) -> str:
+    def handle_pdfs(self, file_path: str) -> str:
         """Handles PDF files."""
         # Attempt to read the text from the PDF. If the first pass has no text, use the VLM to read it.
         # pdf_res = self.pdf_reader.read_pdf_text_as_markdown(file_path)
         # Use the VLM service to extract text from scanned PDFs
+        if (self._is_scanned_pdf(file_path)):
+            logging.info(f"Extracting scanned PDF content using VLM: {file_path}")
+            return self.vlm.extract_scanned_report_as_markdown(file_path)
 
         # 1) Try splitting into pages
         try:
-            content = self._add_page_breaks(file_path)
+            content = self._export_text_with_page_breaks(file_path)
             total_chars = sum(len(p) for p in content.split("<!-- Page"))
             if total_chars > 20:
                 return content
@@ -49,7 +55,7 @@ class ReportDataExtractor:
             logging.error(f"PdfReaderService failed: {e}")
             return self.vlm.extract_scanned_report_as_markdown(file_path)
         
-    def _add_page_breaks(self, file_path: str) -> str:
+    def _export_text_with_page_breaks(self, file_path: str) -> str:
         try:
             reader = PdfReader(file_path)
             chunks = []
@@ -66,6 +72,7 @@ class ReportDataExtractor:
             return f"Error adding page breaks: {str(e)}"
 
     def _flatten_tables(self, markdown: str) -> str:
+        logging.debug("Flattening tables in markdown content...")
         def table_to_list(match):
             table = match.group(0)
             lines = table.strip().split('\n')
