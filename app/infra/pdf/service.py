@@ -1,3 +1,5 @@
+from typing import Dict
+
 from docling.document_converter import DocumentConverter
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.datamodel.pipeline_options import PictureDescriptionBaseOptions
@@ -5,6 +7,7 @@ from docling.document_converter import DocumentConverter, PdfFormatOption, Input
 from docling.backend.docling_parse_v2_backend import DoclingParseV2DocumentBackend
 
 import logging, base64
+import pymupdf
 
 class PdfReaderService:
 
@@ -13,6 +16,17 @@ class PdfReaderService:
     def get_page_break_value(self) -> str:
         self.page_break_number += 1
         return f'--- Page {self.page_break_number} ---'
+
+    def get_pdf_metrics(self, file_path: str) -> Dict[str, int]:
+        # Gather counts of characters and images of a PDF.
+        pdf_doc = pymupdf.open(file_path)
+        pdf_metrics = {'filepath': file_path, 'num_chars': 0, 'num_images': 0}
+        for page in pdf_doc.pages():
+            pdf_metrics['num_chars'] += len(page.get_text())
+            pdf_metrics['num_images'] += len(page.get_images())
+        pdf_doc.close()
+
+        return pdf_metrics
 
     def read_pdf_text_as_markdown(self, file_path):
         """
