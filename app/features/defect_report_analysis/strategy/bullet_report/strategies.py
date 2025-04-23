@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from app.domain.models import PotentialDefect, DetailedPotentialDefect, MarkdownReport
 from app.features.defect_report_analysis.strategy.base import DefectIdentificationStrategy, DefectDetailingStrategy
@@ -57,14 +57,17 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
                     {"role": "user", "content": self.prompts.get_stored_prompt('defects_location_instructions') + Prompts.delimit_document(text)},
                 ])
     
-    def parse_flatten_raw_defect_lists(self, defect_lists_strings: List[str]) -> List[PotentialDefect]:
+    def parse_flatten_raw_defect_lists(self, defect_lists_strings: List[Tuple[str, int]]) -> List[PotentialDefect]:
         """Parse the raw defect list JSONs into a List of Minimal Defects."""
         all_defects: List[PotentialDefect] = []
 
-        for raw_defect_list in defect_lists_strings:
+        for raw_defect_list, page_no in defect_lists_strings:
             sanitized_defect_list = raw_defect_list.replace("```", "").replace("json", '').replace("I don't know.", "").replace("I don't know", "")
             try:
                 chunk_found_defects: List[PotentialDefect] = json.loads(sanitized_defect_list)
+                # Add page number to each defect
+                chunk_found_defects = [PotentialDefect(**defect, evidence_page=page_no) for defect in chunk_found_defects]
+                
                 if isinstance(chunk_found_defects, list):
                     logging.debug(f"Found {len(chunk_found_defects)} defects in chunk.")
                     all_defects.extend(chunk_found_defects)
@@ -77,13 +80,13 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
         # Join results and return
         return all_defects
 
-    async def process_chunk(self,chunk: Chunk):
+    async def process_chunk(self,chunk: Chunk) -> Tuple[str, int]:
         """Asynchronously process a single chunk."""
-        return await self.llm.ask_async([
+        return (await self.llm.ask_async([
             {"role": "system", "content": self.prompts.ASSISTANT_SYSTEM_PROMPT },
             {"role": "user", "content": self.prompts.get_defect_list_instructions(self.metadata["location"]) 
              + Prompts.delimit_document(f"Page {chunk.page_number}\n" + chunk.chunk_content) },
-        ])
+        ]), chunk.page_number)
 
     async def generate_defect_list(self, text: str) -> List[PotentialDefect]:
         # Split text into chunks

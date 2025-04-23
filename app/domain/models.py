@@ -1,4 +1,3 @@
-
 class MarkdownReport:
     content: str
 
@@ -20,8 +19,13 @@ class PotentialDefect(MinimalDefect):
     """Potential Defect model for API response."""
 
     evidence: str # Evidence of the defect in the report e.g. citation
+    evidence_page: int # Page number where the defect evidence is mentioned
     confidence: float # 0.0 - 1.0
     confidence_reason: str # Reason for the confidence level e.g. "The defect is clearly visible in the document."
+
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     def __str__(self):
         return f"PotentialDefect(name={self.name}, location={self.location}, evidence={self.evidence}, confidence={self.confidence}, confidence_reason={self.confidence_reason})\n"
