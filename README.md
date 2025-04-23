@@ -1,12 +1,5 @@
 # Vertical Slice Architecture
 
-## Features
-
-Located in the `/app/features` directory. Each feature encapsulates its own logic and dependencies:
-
-- `pdf_processor` – Summarizes content from PDF files using the ChatGPT API.
-- `excel_processor` – Processes Excel files and summarizes them using the ChatGPT API.
-
 ## Project Structure
 
 Each feature is self-contained with:
@@ -53,10 +46,8 @@ Detailed instructions for LLMs can be found in the [**feature_conventions.md**](
    flask run
    ```
 
-## Testing
+6. **Run the application**
 
-Run all tests using `pytest`:
-
-```bash
-pytest
-```
+   ```bash
+   http://localhost:5000/
+   ```
