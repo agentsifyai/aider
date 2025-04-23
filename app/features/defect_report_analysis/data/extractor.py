@@ -100,14 +100,5 @@ class ReportDataExtractor:
         logging.info("Extracted Markdown Report:\n%s", final_markdown)
         return MarkdownReport(final_markdown)
 
-if __name__ == "__main__":
-    import asyncio, sys
 
-    if len(sys.argv) != 2:
-        print("Usage: python extractor.py <path-to-pdf>")
-        sys.exit(1)
-
-    extractor = ReportDataExtractor()
-    md_report = asyncio.run(extractor.extract_markdown(sys.argv[1]))
-    print(md_report.content)
 
