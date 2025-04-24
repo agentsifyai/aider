@@ -7,7 +7,7 @@ def response_format_from_schema(json_schema: Dict[str, Any]) -> dict:
         "json_schema": json_schema
     }
 
-POTENTIAL_DEFECT_SCHEMA = {
+POTENTIAL_DEFECT_LIST_SCHEMA = {
       "name": "my_schema",
       "strict": False,
       "schema": {
@@ -21,11 +21,11 @@ POTENTIAL_DEFECT_SCHEMA = {
               "properties": {
                 "name": {
                   "type": "string",
-                  "description": "The name or description of the defect."
+                  "description": "The name or description of the defect. This must be a single word or a short phrase describing the damage."
                 },
                 "location": {
                   "type": "string",
-                  "description": "The specific location of the defect."
+                  "description": "The location of the defect. Should be as specific as possible."
                 },
                 "confidence": {
                   "type": "number",
@@ -33,7 +33,7 @@ POTENTIAL_DEFECT_SCHEMA = {
                 },
                 "confidence_reason": {
                   "type": "string",
-                  "description": "Explanation of the confidence score."
+                  "description": "Jutification and explanation of the confidence score."
                 },
                 "evidence": {
                   "type": "string",
