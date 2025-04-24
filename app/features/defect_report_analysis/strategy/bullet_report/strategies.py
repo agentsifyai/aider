@@ -22,8 +22,8 @@ class BulletReportDefectDetailingStrategy(DefectDetailingStrategy):
         super().__init__()
 
 
-    async def detail_defect(self, defect: PotentialDefect) -> DetailedPotentialDefect:
-        raise NotImplementedError("This method should be overridden by subclasses")
+    async def detail_defects(self, defects: List[PotentialDefect]) -> List[DetailedPotentialDefect]:
+        return defects  # TODO: Implement the defect detailing logic
 
 
 class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):

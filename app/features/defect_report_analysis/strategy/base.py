@@ -3,7 +3,7 @@ from app.domain.models import PotentialDefect, DetailedPotentialDefect, Markdown
 
 class DefectDetailingStrategy:
 
-    async def detail_defect(self, defect: PotentialDefect) -> DetailedPotentialDefect:
+    async def detail_defects(self, defects: List[PotentialDefect]) -> List[DetailedPotentialDefect]:
         raise NotImplementedError("This method should be overridden by subclasses")
 
 

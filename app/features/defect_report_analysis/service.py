@@ -61,6 +61,8 @@ class DefectReportAnalysisService:
 
         logging.info("Generating defect list...")
         defects_list = await strategy.identify_defects(content)
+
+        detailed_defects = await strategy.detailing_strategy().detail_defects(defects_list)
         
         logging.info("Processing finished. Returning processed data to view...")
-        return DefectListView(filename, content, defects_list)
+        return DefectListView(filename, content, detailed_defects)

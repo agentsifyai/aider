@@ -20,9 +20,8 @@ class DetailedReportDefectDetailingStrategy(DefectDetailingStrategy):
     def __init__(self, defect_identification_strategy: "DetailedReportDefectIdentificationStrategy") -> None:
         super().__init__()
 
-
-    async def detail_defect(self, defect: PotentialDefect) -> DetailedPotentialDefect:
-        raise NotImplementedError("This method should be overridden by subclasses")
+    async def detail_defects(self, defects: List[PotentialDefect]) -> List[DetailedPotentialDefect]:
+        return defects  # TODO: Implement the defect detailing logic
 
 
 class DetailedReportDefectIdentificationStrategy(DefectIdentificationStrategy):
@@ -58,7 +57,6 @@ class DetailedReportDefectIdentificationStrategy(DefectIdentificationStrategy):
             {"role": "system", "content": self.prompts.ASSISSTANT_SYSTEM_PROMPT },
             {"role": "user", "content": self.prompts.DEFECT_LIST_INTRUCTIONS + Prompts.delimit_document(text)},
         ])
-        
 
         return json.loads(result)
     
