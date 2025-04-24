@@ -2,7 +2,7 @@ from app.domain.models import MarkdownReport
 from app.infra.vlm.service import VlmService
 from app.infra.pdf.service import PdfReaderService
 from app.infra.xls.service import ExcelReaderService
-from docling.document_converter import DocumentConverter
+
 import re
 import logging
 from PyPDF2 import PdfReader
@@ -34,6 +34,12 @@ class ReportDataExtractor:
         if (self._is_scanned_pdf(file_path)):
             logging.info(f"Extracting scanned PDF content using VLM: {file_path}")
             return self.vlm.extract_scanned_report_as_markdown(file_path)
+
+        # TODO: Streamline this whole method.
+        pdf_metrics = self.pdf_reader.get_pdf_metrics(file_path)
+        # These values imply a mixed-content document.
+        if pdf_metrics['num_chars'] >= 20 and pdf_metrics['num_images'] > 0:
+            return self.pdf_reader.read_pdf_mixed_as_markdown(file_path)
 
         # 1) Try splitting into pages
         try:
@@ -106,6 +112,3 @@ class ReportDataExtractor:
         final_markdown = self._flatten_tables(content)
         logging.info("Extracted Markdown Report:\n%s", final_markdown)
         return MarkdownReport(final_markdown)
-
-
-
