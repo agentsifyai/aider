@@ -9,7 +9,7 @@ class VlmService:
     """
     Vision Language Model Service for interaction with scanned reports.
     """
-
+    # TODO: Consider making these values ENUMs that we can more easily reference elsewhere.
     DEFAULT_MODEL = "gpt-4.1"
     DEFAULT_TEMPERATURE = 0.7
 
@@ -83,4 +83,3 @@ class VlmService:
         except Exception as e:
             logging.error(f"OpenAI API error: {str(e)}")
             return f"Error asking llm: {str(e)}"
-        

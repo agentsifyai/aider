@@ -1,12 +1,18 @@
+from enum import Enum
+
 from app.domain.models import MarkdownReport
 from app.infra.vlm.service import VlmService
 from app.infra.pdf.service import PdfReaderService
 from app.infra.xls.service import ExcelReaderService
-from docling.document_converter import DocumentConverter
+
 import re
 import logging
 from PyPDF2 import PdfReader
 
+class DocumentType(Enum):
+    SCANNED = "scanned"
+    MIXED = "mixed"
+    TEXT = "text"
 
 class ReportDataExtractor:
     file_path: str
@@ -16,25 +22,16 @@ class ReportDataExtractor:
         self.pdf_reader = PdfReaderService()
         self.excel_reader = ExcelReaderService()
 
-    def _is_scanned_pdf(self, file_path: str) -> bool:
-        """Checks if the PDF file is scanned."""
-        pdf_metrics = self.pdf_reader.get_pdf_metrics(file_path)
-        logging.debug(f"PDF metrics: {pdf_metrics}")
+    def _document_type(self, pdf_metrics: dict) -> DocumentType:
+        """Determines the type of document based on its metrics."""
         if pdf_metrics['num_chars'] < 20 and pdf_metrics['num_images'] > 0:
-            logging.info(f"Scanned PDF detected: {file_path}")
-            return True
-        # TODO: Detect mixed content (text + images)
-        return False  
+            return DocumentType.SCANNED
+        elif pdf_metrics['num_chars'] >= 20 and pdf_metrics['num_images'] > 0:
+            return DocumentType.MIXED
+        else:
+            return DocumentType.TEXT
 
-    def handle_pdfs(self, file_path: str) -> str:
-        """Handles PDF files."""
-        # Attempt to read the text from the PDF. If the first pass has no text, use the VLM to read it.
-        # pdf_res = self.pdf_reader.read_pdf_text_as_markdown(file_path)
-        # Use the VLM service to extract text from scanned PDFs
-        if (self._is_scanned_pdf(file_path)):
-            logging.info(f"Extracting scanned PDF content using VLM: {file_path}")
-            return self.vlm.extract_scanned_report_as_markdown(file_path)
-
+    def _handle_text_pdfs(self, file_path: str) -> str:
         # 1) Try splitting into pages
         try:
             content = self._export_text_with_page_breaks(file_path)
@@ -45,7 +42,7 @@ class ReportDataExtractor:
         except Exception as e:
             logging.warning(f"PyPDF2 split failed: {e}")
 
-        # 2) Fallback: PdfReaderService (might return 'No readable text')
+        # 2) Fallback: PdfReaderService (might return 'No readable text' - we fall back to VLM)
         try:
             raw = self.pdf_reader.read_pdf_text_as_markdown(file_path)
             if "No readable text" in raw:
@@ -54,7 +51,22 @@ class ReportDataExtractor:
         except Exception as e:
             logging.error(f"PdfReaderService failed: {e}")
             return self.vlm.extract_scanned_report_as_markdown(file_path)
-        
+
+    def handle_pdfs(self, file_path: str) -> str:
+        """Handles PDF files."""
+        pdf_metrics = self.pdf_reader.get_pdf_metrics(file_path)
+
+        match self._document_type(pdf_metrics):
+            case DocumentType.SCANNED:
+                logging.warning(f"Extracting scanned PDF content using VLM: {file_path}")
+                return self.vlm.extract_scanned_report_as_markdown(file_path)
+            case DocumentType.MIXED:
+                logging.warning(f"Extracting mixed PDF content using PyPDF2: {file_path}")
+                return self.pdf_reader.read_pdf_mixed_as_markdown(file_path)
+            case DocumentType.TEXT:
+                logging.warning(f"Extracting text PDF content using PyPDF2: {file_path}")
+                return self._handle_text_pdfs(file_path)
+
     def _export_text_with_page_breaks(self, file_path: str) -> str:
         try:
             reader = PdfReader(file_path)
@@ -106,6 +118,3 @@ class ReportDataExtractor:
         final_markdown = self._flatten_tables(content)
         logging.info("Extracted Markdown Report:\n%s", final_markdown)
         return MarkdownReport(final_markdown)
-
-
-
