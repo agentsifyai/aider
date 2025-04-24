@@ -16,7 +16,7 @@ class PdfReaderService:
 
     def get_page_break_value(self) -> str:
         self.page_break_number += 1
-        return f'--- Page {self.page_break_number} ---'
+        return f'<!-- Page {self.page_break_number} -->'
 
     def get_pdf_metrics(self, file_path: str) -> Dict[str, int]:
         # Gather counts of characters and images of a PDF.

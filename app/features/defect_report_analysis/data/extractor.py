@@ -30,9 +30,9 @@ class ReportDataExtractor:
             return DocumentType.MIXED
         else:
             return DocumentType.TEXT
-    
+
     def _handle_text_pdfs(self, file_path: str) -> str:
-# 1) Try splitting into pages
+        # 1) Try splitting into pages
         try:
             content = self._export_text_with_page_breaks(file_path)
             total_chars = sum(len(p) for p in content.split("<!-- Page"))
@@ -54,9 +54,6 @@ class ReportDataExtractor:
 
     def handle_pdfs(self, file_path: str) -> str:
         """Handles PDF files."""
-        # Attempt to read the text from the PDF. If the first pass has no text, use the VLM to read it.
-        # pdf_res = self.pdf_reader.read_pdf_text_as_markdown(file_path)
-        # Use the VLM service to extract text from scanned PDFs
         pdf_metrics = self.pdf_reader.get_pdf_metrics(file_path)
 
         match self._document_type(pdf_metrics):
@@ -69,7 +66,7 @@ class ReportDataExtractor:
             case DocumentType.TEXT:
                 logging.warning(f"Extracting text PDF content using PyPDF2: {file_path}")
                 return self._handle_text_pdfs(file_path)
-        
+
     def _export_text_with_page_breaks(self, file_path: str) -> str:
         try:
             reader = PdfReader(file_path)
