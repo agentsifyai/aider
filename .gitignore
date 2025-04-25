@@ -41,3 +41,5 @@ uploads/
 htmlcov/
 coverage.xml
 .cache/
+
+test*.py

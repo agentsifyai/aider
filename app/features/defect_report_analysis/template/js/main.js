@@ -152,7 +152,9 @@ document.addEventListener('DOMContentLoaded', function () {
             { label: 'Confidence Reason', value: defect.confidence_reason ?? 'Unknown' },
             { label: 'Evidence', value: defect.evidence ? 
                 "<i>" + defect.evidence + "</i>" + " - Found in <b>page " + defect.evidence_page + "</b>" 
-                : 'Unknown' }
+                : 'Unknown' },
+            { label: 'Opis usterki:', value: defect.verbose_description ?? 'Unknown' },
+            { label: 'Przyczyna usterki:', value: defect.defect_cause ?? 'Unknown' },
         ];
     
         return infoEntries

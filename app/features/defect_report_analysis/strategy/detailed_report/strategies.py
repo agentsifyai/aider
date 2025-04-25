@@ -4,6 +4,7 @@ from app.domain.models import PotentialDefect, MarkdownReport
 from app.features.defect_report_analysis.common.strategies import CommonDefectDetailingStrategy
 from app.features.defect_report_analysis.strategy.base import DefectIdentificationStrategy, DefectDetailingStrategy
 from app.features.defect_report_analysis.strategy.detailed_report.prompts import Prompts
+from app.features.defect_report_analysis.common.chunkers import PageChunker
 
 from app.infra.llm.service import LLMService
 
@@ -19,6 +20,7 @@ class DetailedReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     metadata: Dict[str, Any] = {}
     llm: LLMService = LLMService()
     prompts: Prompts = Prompts()
+    chunker: PageChunker = PageChunker()
 
     def __init__(self):
         super().__init__()
@@ -34,16 +36,29 @@ class DetailedReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     def detailing_strategy(self) -> DefectDetailingStrategy:
         return CommonDefectDetailingStrategy(self.metadata["report"])
 
-    async def generate_defect_list(self, text: str) -> List[PotentialDefect]:
-        # Split text into chunks
-        # Create asyncio tasks for each chunk
-        logging.info("Generating defect list...")
-        result = await self.llm.ask_async([
-            {"role": "system", "content": self.prompts.ASSISSTANT_SYSTEM_PROMPT },
-            {"role": "user", "content": self.prompts.DEFECT_LIST_INTRUCTIONS + Prompts.delimit_document(text)},
-        ])
+    async def _process_chunk(self, chunk):
+            try:
+                result = await self.llm.ask_async([
+                    {"role": "system", "content": self.prompts.ASSISSTANT_SYSTEM_PROMPT },
+                    {"role": "user", "content": self.prompts.DEFECT_LIST_INTRUCTIONS + Prompts.delimit_document(chunk.chunk_content)},
+                ])
+                defects = json.loads(result)["defects"]
+                return [PotentialDefect(**defect, evidence_page=chunk.page_number) for defect in defects]
+            except Exception as e:
+                logging.error(f"Failed to parse defects for page {chunk.page_number}: {e}")
+                return []
 
-        return json.loads(result)
+
+    async def generate_defect_list(self, text: str) -> List[PotentialDefect]:
+        import asyncio
+        logging.info("Generating defect list with page chunker asynchronously...")
+        chunks = await self.chunker.get_chunks(text)
+        all_defects = []
+        tasks = [self._process_chunk(chunk) for chunk in chunks]
+        results = await asyncio.gather(*tasks)
+        for defects in results:
+            all_defects.extend(defects)
+        return all_defects
     
 
     async def identify_defects(self, report: MarkdownReport) -> List[PotentialDefect]:

@@ -9,7 +9,7 @@ def response_format_from_schema(json_schema: Dict[str, Any]) -> dict:
 
 POTENTIAL_DEFECT_LIST_SCHEMA = {
       "name": "my_schema",
-      "strict": False,
+      "strict": True,
       "schema": {
         "type": "object",
         "properties": {

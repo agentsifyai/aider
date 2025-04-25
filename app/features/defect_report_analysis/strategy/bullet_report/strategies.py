@@ -1,11 +1,11 @@
 from typing import List, Dict, Any
 
-from app.domain.models import PotentialDefect, MarkdownReport
+from app.domain.models import PotentialDefect, DetailedPotentialDefect, MarkdownReport
 from app.features.defect_report_analysis.common.strategies import CommonDefectDetailingStrategy
 from app.features.defect_report_analysis.common.schemas import POTENTIAL_DEFECT_LIST_SCHEMA, response_format_from_schema
 from app.features.defect_report_analysis.strategy.base import DefectIdentificationStrategy, DefectDetailingStrategy
 from app.features.defect_report_analysis.strategy.bullet_report.prompts import Prompts
-from app.features.defect_report_analysis.strategy.bullet_report.chunker import LocationSectionChunker, Chunk
+from app.features.defect_report_analysis.strategy.bullet_report.chunker import Chunker, Chunk
 
 from app.infra.llm.service import LLMService
 
@@ -22,7 +22,7 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     metadata: Dict[str, Any] = {}
     llm: LLMService = LLMService()
     prompts: Prompts = Prompts()
-    chunker: LocationSectionChunker = LocationSectionChunker()
+    chunker: Chunker = Chunker()
 
     def __init__(self):
         super().__init__()

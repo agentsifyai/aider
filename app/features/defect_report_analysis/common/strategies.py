@@ -9,6 +9,8 @@ from app.infra.llm.service import LLMService
 
 import json, logging, asyncio
 
+# This class essentially does not work as intended, because the defect details are stored as dictionaries in the JSON response.
+# TODO The class is used to convert the dictionaries to objects, but it does not work as expected.
 class CommonDefectDetails:
     defect_id: str
     verbose_description: str
@@ -42,12 +44,16 @@ class CommonDefectDetailingStrategy(DefectDetailingStrategy):
             defect_details = []
         #TODO optimize:
         detailed_defects = []
-        for defect in defect_group:
-            for d_details in defect_details:
+        for d_details in defect_details:
+            for defect in defect_group:
                 if defect.id == d_details["defect_id"]:
                     d = DetailedPotentialDefect(**defect.__dict__)
+                    # add defects details to the defect
                     d.verbose_description = d_details["verbose_description"]
                     d.defect_cause = d_details["defect_cause"]
+                    detailed_defects.append(d)
+                else:
+                    d = DetailedPotentialDefect(**defect.__dict__)
                     detailed_defects.append(d)
         return detailed_defects
 
