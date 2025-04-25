@@ -57,8 +57,8 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
 
         try:
             chunk_defects = json.loads(response)["defects"]
-            logging.critical(f"Chunk defects: {chunk_defects}")
-            logging.debug(f"Found {len(chunk_defects)} defects in chunk.")
+            logging.debug(f"Chunk defects: {chunk_defects}")
+            logging.info(f"Found {len(chunk_defects)} defects in chunk.")
             chunk_defects = [PotentialDefect(**defect, evidence_page=chunk.page_number) for defect in chunk_defects]
         except json.JSONDecodeError as e:
             logging.error(f"JSON decode error: {str(e)}")
