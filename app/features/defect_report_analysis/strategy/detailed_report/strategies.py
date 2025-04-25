@@ -42,7 +42,9 @@ class DetailedReportDefectIdentificationStrategy(DefectIdentificationStrategy):
                     {"role": "system", "content": self.prompts.ASSISSTANT_SYSTEM_PROMPT },
                     {"role": "user", "content": self.prompts.DEFECT_LIST_INTRUCTIONS + Prompts.delimit_document(chunk.chunk_content)},
                 ])
-                defects = json.loads(result)["defects"]
+                result_parsed = json.loads(result)
+                # TODO resolve the issue with varying response formats
+                defects = result_parsed["defects"] if type(result_parsed) is dict else result_parsed
                 return [PotentialDefect(**defect, evidence_page=chunk.page_number) for defect in defects]
             except Exception as e:
                 logging.error(f"Failed to parse defects for page {chunk.page_number}: {e}")
