@@ -57,3 +57,44 @@ POTENTIAL_DEFECT_LIST_SCHEMA = {
         "additionalProperties": False
       }
     }
+
+COMMON_DETAILING_SCHEMA = {
+      "name": "defect_report",
+      "strict": True,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "defects": {
+            "type": "array",
+            "description": "List of defects reported.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "defect_id": {
+                  "type": "string",
+                  "description": "Unique identifier for the defect."
+                },
+                "verbose_description": {
+                  "type": "string",
+                  "description": "Detailed description of the defect."
+                },
+                "defect_cause": {
+                  "type": "string",
+                  "description": "The suspected cause of the defect."
+                }
+              },
+              "required": [
+                "defect_id",
+                "verbose_description",
+                "defect_cause"
+              ],
+              "additionalProperties": False
+            }
+          }
+        },
+        "required": [
+          "defects"
+        ],
+        "additionalProperties": False
+      }
+    }

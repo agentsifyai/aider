@@ -1,37 +1,22 @@
-from typing import List, Dict
+from typing import List, Dict, Any
 
-from app.domain.models import PotentialDefect, DetailedPotentialDefect, MarkdownReport
+from app.domain.models import PotentialDefect, MarkdownReport
+from app.features.defect_report_analysis.common.strategies import CommonDefectDetailingStrategy
 from app.features.defect_report_analysis.strategy.base import DefectIdentificationStrategy, DefectDetailingStrategy
 from app.features.defect_report_analysis.strategy.detailed_report.prompts import Prompts
 
 from app.infra.llm.service import LLMService
 
-import asyncio, json, logging
-
-
-class DetailedReportDefectDetailingStrategy(DefectDetailingStrategy):
-    """
-    Bullet Report Defect Detailing Strategy
-    This strategy is used to detail defects in a bullet report type.
-    It uses the bullet report's content and metadata to detail defects.
-    """
-
-    # We can move the state through the constructor if needed
-    def __init__(self, defect_identification_strategy: "DetailedReportDefectIdentificationStrategy") -> None:
-        super().__init__()
-
-    async def detail_defects(self, defects: List[PotentialDefect]) -> List[DetailedPotentialDefect]:
-        return defects  # TODO: Implement the defect detailing logic
+import json, logging
 
 
 class DetailedReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     """
-    Bullet Report Defect Identification Strategy
-    This strategy is used to identify defects in a bullet report type.
-    It uses the bullet report's content and metadata to identify defects.
+    Detailed Report Defect Identification Strategy
+    This strategy is used to identify defects in a detailed report type.
     """
 
-    metadata: Dict[str, str] = {}
+    metadata: Dict[str, Any] = {}
     llm: LLMService = LLMService()
     prompts: Prompts = Prompts()
 
@@ -47,7 +32,7 @@ class DetailedReportDefectIdentificationStrategy(DefectIdentificationStrategy):
         """
     
     def detailing_strategy(self) -> DefectDetailingStrategy:
-        return DetailedReportDefectDetailingStrategy(self)
+        return CommonDefectDetailingStrategy(self.metadata["report"])
 
     async def generate_defect_list(self, text: str) -> List[PotentialDefect]:
         # Split text into chunks
@@ -63,6 +48,7 @@ class DetailedReportDefectIdentificationStrategy(DefectIdentificationStrategy):
 
     async def identify_defects(self, report: MarkdownReport) -> List[PotentialDefect]:
         logging.info("Identifying defects with Detailed Report Id strategy...")
+        self.metadata["report"] = report
         defects = await self.generate_defect_list(report.content)
         logging.debug(f"Defects identified: {defects}")
         return defects

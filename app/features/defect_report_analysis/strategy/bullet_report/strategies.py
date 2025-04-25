@@ -1,6 +1,7 @@
-from typing import List, Dict, Tuple
+from typing import List, Dict, Any
 
-from app.domain.models import PotentialDefect, DetailedPotentialDefect, MarkdownReport
+from app.domain.models import PotentialDefect, MarkdownReport
+from app.features.defect_report_analysis.common.strategies import CommonDefectDetailingStrategy
 from app.features.defect_report_analysis.common.schemas import POTENTIAL_DEFECT_LIST_SCHEMA, response_format_from_schema
 from app.features.defect_report_analysis.strategy.base import DefectIdentificationStrategy, DefectDetailingStrategy
 from app.features.defect_report_analysis.strategy.bullet_report.prompts import Prompts
@@ -10,21 +11,6 @@ from app.infra.llm.service import LLMService
 
 import asyncio, json, logging
 
-class BulletReportDefectDetailingStrategy(DefectDetailingStrategy):
-    """
-    Bullet Report Defect Detailing Strategy
-    This strategy is used to detail defects in a bullet report type.
-    It uses the bullet report's content and metadata to detail defects.
-    """
-
-    # We can move the state through the constructor if needed
-    def __init__(self, defect_identification_strategy: "BulletReportDefectDetailingStrategy") -> None:
-        super().__init__()
-
-
-    async def detail_defects(self, defects: List[PotentialDefect]) -> List[DetailedPotentialDefect]:
-        return defects  # TODO: Implement the defect detailing logic
-
 
 class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     """
@@ -33,7 +19,7 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     It uses the bullet report's content and metadata to identify defects.
     """
 
-    metadata: Dict[str, str] = {}
+    metadata: Dict[str, Any] = {}
     llm: LLMService = LLMService()
     prompts: Prompts = Prompts()
     chunker: LocationSectionChunker = LocationSectionChunker()
@@ -50,7 +36,7 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
         """
     
     def detailing_strategy(self) -> DefectDetailingStrategy:
-        return BulletReportDefectDetailingStrategy(self)
+        return CommonDefectDetailingStrategy(self.metadata["report"])
 
     def generate_location_metadata(self, text) -> str:
         return self.llm.ask([
@@ -70,7 +56,8 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
         logging.debug(f"Raw defect list: {response}")
 
         try:
-            chunk_defects = json.loads(response)
+            chunk_defects = json.loads(response)["defects"]
+            logging.critical(f"Chunk defects: {chunk_defects}")
             logging.debug(f"Found {len(chunk_defects)} defects in chunk.")
             chunk_defects = [PotentialDefect(**defect, evidence_page=chunk.page_number) for defect in chunk_defects]
         except json.JSONDecodeError as e:
@@ -97,6 +84,7 @@ class BulletReportDefectIdentificationStrategy(DefectIdentificationStrategy):
 
     async def identify_defects(self, report: MarkdownReport) -> List[PotentialDefect]:
         logging.info("Identifying defects in bullet report...")
+        self.metadata["report"] = report
         logging.debug("Inferring location metadata...")
         self.metadata["location"] = self.generate_location_metadata(report.content)
         defects = await self.generate_defect_list(report.content)

@@ -1,3 +1,6 @@
+import json
+from typing import List, Optional
+from app.domain.models import PotentialDefect
 
 class Prompts:
     """A class to manage common prompts for the LLM."""
@@ -20,3 +23,21 @@ class Prompts:
     def delimit_document(text: str) -> str:
         """Delimit text with a document tag."""
         return Prompts.delimit('document', text)
+    
+COMMON_DETAILING_SYSTEM_PROMPT = """
+You are going to receive a list of defects present in the document. 
+The document will be provided inside a <document> and </document> tags.
+Your task is to provide a list of details for each defect.
+"""
+
+def get_common_detailing_user_prompt(defects: List[PotentialDefect], document: str) -> str: 
+    # Convert defects to dicts if needed, then pretty-print as JSON
+    defects_json = json.dumps([
+        defect.__dict__ if hasattr(defect, '__dict__') else defect for defect in defects
+    ], ensure_ascii=False, indent=2)
+    return f"""
+    Please provide details for each of these defects:
+    {defects_json}
+    The document is:
+    {Prompts.delimit_document(document)}
+    """
