@@ -150,9 +150,11 @@ document.addEventListener('DOMContentLoaded', function () {
     
         const infoEntries = [
             { label: 'Confidence Reason', value: defect.confidence_reason ?? 'Unknown' },
-            { label: 'Evidence', value: defect.evidence ? "<i>" + defect.evidence + "</i>" : 'Unknown' },
-            { label: 'Severity', value: defect.severity ?? 'Unknown' }, // Example of an additional field
-            { label: 'Reported By', value: defect.reported_by ?? 'Unknown' } // Example of another additional field
+            { label: 'Evidence', value: defect.evidence ? 
+                "<i>" + defect.evidence + "</i>" + " - Found in <b>page " + defect.evidence_page + "</b>" 
+                : 'Unknown' },
+            { label: 'Opis usterki:', value: defect.verbose_description ?? 'Unknown' },
+            { label: 'Przyczyna usterki:', value: defect.defect_cause ?? 'Unknown' },
         ];
     
         return infoEntries

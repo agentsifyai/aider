@@ -1,40 +1,26 @@
-from typing import List, Dict
+from typing import List, Dict, Any
 
-from app.domain.models import PotentialDefect, DetailedPotentialDefect, MarkdownReport
+from app.domain.models import PotentialDefect, MarkdownReport
+from app.features.defect_report_analysis.common.strategies import CommonDefectDetailingStrategy
 from app.features.defect_report_analysis.strategy.base import DefectIdentificationStrategy, DefectDetailingStrategy
 from app.features.defect_report_analysis.strategy.detailed_report.prompts import Prompts
+from app.features.defect_report_analysis.common.chunkers import PageChunker
 
 from app.infra.llm.service import LLMService
 
-import asyncio, json, logging
-
-
-class DetailedReportDefectDetailingStrategy(DefectDetailingStrategy):
-    """
-    Bullet Report Defect Detailing Strategy
-    This strategy is used to detail defects in a bullet report type.
-    It uses the bullet report's content and metadata to detail defects.
-    """
-
-    # We can move the state through the constructor if needed
-    def __init__(self, defect_identification_strategy: "DetailedReportDefectIdentificationStrategy") -> None:
-        super().__init__()
-
-
-    async def detail_defect(self, defect: PotentialDefect) -> DetailedPotentialDefect:
-        raise NotImplementedError("This method should be overridden by subclasses")
+import json, logging
 
 
 class DetailedReportDefectIdentificationStrategy(DefectIdentificationStrategy):
     """
-    Bullet Report Defect Identification Strategy
-    This strategy is used to identify defects in a bullet report type.
-    It uses the bullet report's content and metadata to identify defects.
+    Detailed Report Defect Identification Strategy
+    This strategy is used to identify defects in a detailed report type.
     """
 
-    metadata: Dict[str, str] = {}
+    metadata: Dict[str, Any] = {}
     llm: LLMService = LLMService()
     prompts: Prompts = Prompts()
+    chunker: PageChunker = PageChunker()
 
     def __init__(self):
         super().__init__()
@@ -48,23 +34,38 @@ class DetailedReportDefectIdentificationStrategy(DefectIdentificationStrategy):
         """
     
     def detailing_strategy(self) -> DefectDetailingStrategy:
-        return DetailedReportDefectDetailingStrategy(self)
+        return CommonDefectDetailingStrategy(self.metadata["report"])
+
+    async def _process_chunk(self, chunk):
+            try:
+                result = await self.llm.ask_async([
+                    {"role": "system", "content": self.prompts.ASSISSTANT_SYSTEM_PROMPT },
+                    {"role": "user", "content": self.prompts.DEFECT_LIST_INTRUCTIONS + Prompts.delimit_document(chunk.chunk_content)},
+                ])
+                result_parsed = json.loads(result)
+                # TODO resolve the issue with varying response formats
+                defects = result_parsed["defects"] if type(result_parsed) is dict else result_parsed
+                return [PotentialDefect(**defect, evidence_page=chunk.page_number) for defect in defects]
+            except Exception as e:
+                logging.error(f"Failed to parse defects for page {chunk.page_number}: {e}")
+                return []
+
 
     async def generate_defect_list(self, text: str) -> List[PotentialDefect]:
-        # Split text into chunks
-        # Create asyncio tasks for each chunk
-        logging.info("Generating defect list...")
-        result = await self.llm.ask_async([
-            {"role": "system", "content": self.prompts.ASSISSTANT_SYSTEM_PROMPT },
-            {"role": "user", "content": self.prompts.DEFECT_LIST_INTRUCTIONS + Prompts.delimit_document(text)},
-        ])
-        
-
-        return json.loads(result)
+        import asyncio
+        logging.info("Generating defect list with page chunker asynchronously...")
+        chunks = await self.chunker.get_chunks(text)
+        all_defects = []
+        tasks = [self._process_chunk(chunk) for chunk in chunks]
+        results = await asyncio.gather(*tasks)
+        for defects in results:
+            all_defects.extend(defects)
+        return all_defects
     
 
     async def identify_defects(self, report: MarkdownReport) -> List[PotentialDefect]:
         logging.info("Identifying defects with Detailed Report Id strategy...")
+        self.metadata["report"] = report
         defects = await self.generate_defect_list(report.content)
         logging.debug(f"Defects identified: {defects}")
         return defects

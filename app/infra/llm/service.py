@@ -1,4 +1,7 @@
-from typing import Dict, List
+from typing import Dict, List, TypedDict
+
+class ResponseFormat(TypedDict):
+    type: str
 from openai import OpenAI, AsyncOpenAI
 from openai.types.chat import ChatCompletionMessageParam
 import os
@@ -23,6 +26,7 @@ class LLMService:
 
     #TODO should token limits be implemented here?
 
+    # TODO: add a param to set model, temp and json schema
     def ask(self, messages: List[Dict[str, str]] | ChatCompletionMessageParam) -> str:
         """Ask llms questions about text using OpenAI's API."""
         self.client = OpenAI(api_key=self.__api_key) 
@@ -42,7 +46,7 @@ class LLMService:
         finally:
             self.client.close()
         
-    async def ask_async(self, messages: List[Dict[str, str]] | ChatCompletionMessageParam):
+    async def ask_async(self, messages: List[Dict[str, str]] | ChatCompletionMessageParam, response_format: ResponseFormat = {"type": "text"}) -> str:
         """Ask llms questions about text using OpenAI's API."""
         self.client_async = AsyncOpenAI(api_key=self.__api_key)
         try:
@@ -50,7 +54,8 @@ class LLMService:
             logging.debug(f"Messages: {messages}")
             response = await self.client_async.chat.completions.create(
                 model=self.DEFAULT_MODEL,
-                messages=messages
+                messages=messages,
+                response_format=response_format
             )
             logging.info("LLM response received")
             logging.debug(f"Response: {response}")

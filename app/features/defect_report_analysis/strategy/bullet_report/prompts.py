@@ -13,14 +13,6 @@ class Prompts(CommonPrompts):
         }
 
 #TODO assistant_system_prompt should be moved to the common prompts file.
-    ASSISTANT_SYSTEM_PROMPT = """
-        You are a professional assistant that searches through documents and finds relevant information for the user. 
-        You will be asked to find an information in a document or to infer an information based from the document content.
-        Document will be delimited using <document> and </document> tags.
-        Your answer should contain only the information that is relevant to the question.
-        If there is no information in the document that can be used to answer the question, you should say "I don't know".
-        All the contents of your answer must be in polish language.
-    """
 
     DEFECTS_LOCATION_INSTRUCTIONS = """
         You must provide a location of where the defects report is located.
