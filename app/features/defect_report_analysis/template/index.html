@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}PDF Processor{% endblock %}
+
+{% block content %}
+<!-- dropdown button styling possibly to be moved to different css file -->
+<style>
+    .dropdown-button {
+        background-color: #007bff; /* Blue background */
+        color: white; /* White text */
+        border: none; /* Remove border */
+        padding: 8px 12px; /* Add padding for better spacing */
+        font-size: 14px; /* Adjust font size */
+        cursor: pointer; /* Pointer cursor on hover */
+        border-radius: 5px; /* Rounded corners */
+        transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth hover effect */
+    }
+
+    .dropdown-button:hover {
+        background-color: #0056b3; /* Darker blue on hover */
+        transform: scale(1.02); /* Slightly enlarge the button on hover */
+    }
+
+    .dropdown-button:active {
+        background-color: #003f7f; /* Even darker blue when clicked */
+        transform: scale(0.95); /* Slightly shrink the button when clicked */
+    }
+</style>
+
+<div class="page-container">
+    <h1>PDF Processor</h1>
+    <p>Upload a PDF file to get an AI-generated summary.</p>
+    
+    <div class="upload-section">
+        <form id="upload-form" enctype="multipart/form-data">
+            <div class="file-input-wrapper">
+                <input type="file" id="pdf-file" name="file" accept=".pdf" required>
+                <label for="pdf-file" class="file-label">
+                    Choose PDF File
+                </label>
+            </div>
+            <div id="file-selected" class="file-selected" style="display: none;">
+                <p id="file-selected-message"></p>
+            </div>
+            <button type="submit" class="submit-btn">Process PDF</button>
+        </form>
+    </div>
+    
+    <div id="loading-container" class="loading-container" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>Processing PDF... This may take a moment.</p>
+    </div>
+    
+    <div id="result-section" class="result-section" style="display: none;">
+        <h2>Defects Summary</h2>
+        <p id="filename-display"></p>
+        <p id="defect-amount-display"></p>
+        <div class="summary-content">
+            <div id="table-container">
+                <table id="defects-table">
+                    <thead>
+                        <tr>
+                            <th>Confidence</th>
+                            <th>Defect</th>
+                            <th>Location</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="defects-table-body">
+                        <!-- Table rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="no-defects-message" style="display: none;">
+                <p>No defects found in the document.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="error-section" class="error-section" style="display: none;">
+        <p class="error-message"></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('defect_report_analysis.static', filename='js/main.js') }}"></script>
+{% endblock %} 
