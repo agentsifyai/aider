@@ -42,19 +42,19 @@ class CommonDefectDetailingStrategy(DefectDetailingStrategy):
         except json.JSONDecodeError as e:
             logging.error(f"Failed to decode JSON: {e}")
             defect_details = []
-        #TODO optimize:
+        
         detailed_defects = []
-        for d_details in defect_details:
-            for defect in defect_group:
-                if defect.id == d_details["defect_id"]:
-                    d = DetailedPotentialDefect(**defect.__dict__)
-                    # add defects details to the defect
-                    d.verbose_description = d_details["verbose_description"]
-                    d.defect_cause = d_details["defect_cause"]
-                    detailed_defects.append(d)
-                else:
-                    d = DetailedPotentialDefect(**defect.__dict__)
-                    detailed_defects.append(d)
+
+        defect_mapping = {d_details["defect_id"]:d_details for d_details in defect_details}
+        defect_ids = set(defect_mapping.keys())
+
+        for defect in defect_group:
+            d = DetailedPotentialDefect(**defect.__dict__)
+            if defect.id in defect_ids:
+                d.verbose_description = defect_mapping[defect.id]["verbose_description"]
+                d.defect_cause = defect_mapping[defect.id]["defect_cause"]
+            detailed_defects.append(d)
+
         return detailed_defects
 
     async def detail_defects(self, defects: List[PotentialDefect]) -> List[DetailedPotentialDefect]:
